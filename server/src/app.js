@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import quickbooksRouter from './routes/quickbooks.js';
 import businessSettingsRouter from './routes/businessSettings.js';
+import chatRouter from './routes/chat.js';
 
 export function createApp() {
   const app = express();
@@ -14,6 +15,7 @@ export function createApp() {
 
   app.use('/api/quickbooks', quickbooksRouter);
   app.use('/api/business-settings', businessSettingsRouter);
+  app.use('/api/chat', chatRouter);
 
   app.use((err, _req, res, _next) => {
     console.error(err);

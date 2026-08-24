@@ -25,6 +25,7 @@ async function bootstrap() {
   app.listen(env.PORT, () => {
     console.log(`Server listening on http://localhost:${env.PORT}`);
     console.log(`Business settings: http://localhost:${env.PORT}/api/business-settings`);
+    console.log(`Chat API: http://localhost:${env.PORT}/api/chat/message`);
   });
 }
 
