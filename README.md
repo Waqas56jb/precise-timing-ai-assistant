@@ -60,7 +60,7 @@
 - **QuickBooks** OAuth (sandbox → production)
 - **Supabase** Postgres + service role
 - GoDaddy Bookings link (configurable)
-- Yelp / Thumbtack (roadmap)
+- **Thumbtack / Yelp** lead ingest (webhook + email parse)
 
 </td>
 <td width="50%">
@@ -229,6 +229,18 @@ Base URL (local): `http://127.0.0.1:3001`
 | `GET` | `/api/quickbooks/status` | Token status |
 | `POST` | `/api/quickbooks/refresh` | Refresh tokens |
 | `GET` | `/api/quickbooks/company` | Company info |
+| `GET` | `/api/thumbtack/status` | Thumbtack ingest status |
+| `POST` | `/api/thumbtack/webhook` | Thumbtack/Zapier JSON → lead |
+| `POST` | `/api/thumbtack/email` | Thumbtack lead email → lead |
+| `GET` | `/api/yelp/status` | Yelp ingest status |
+| `POST` | `/api/yelp/webhook` | Yelp/Zapier JSON → lead |
+| `POST` | `/api/yelp/email` | Yelp RAQ email → lead |
+| `GET` | `/api/yelp/business/:id` | Optional Fusion business lookup |
+| `GET` | `/api/yelp/search` | Optional Fusion search |
+
+Lead list filter: `GET /api/leads?source=thumbtack` or `?source=yelp`.
+
+Webhook auth header: `X-Webhook-Secret: <LEAD_INGEST_SECRET or provider secret>`.
 
 ### Chat message body
 
@@ -299,6 +311,23 @@ Typical entities: business settings, services, FAQs, pricing rules, service area
 | `npm run qb:migrate-tokens` | File tokens → DB |
 | `npm run chat:test` | Chat smoke test |
 | `npm run lead:test` | Lead pipeline test |
+| `npm run lead:ingest-test` | Thumbtack/Yelp ingest smoke test |
+
+---
+
+## 🧲 Thumbtack & Yelp leads
+
+Official **Thumbtack Partner** and **Yelp Leads** APIs are partner/invite-only. This app ingests leads the practical way:
+
+1. **Webhook JSON** — Zapier / Make / partner hook → `POST /api/thumbtack/webhook` or `/api/yelp/webhook`
+2. **Email parse** — forward RAQ / Thumbtack notification emails → `POST /api/.../email` with `{ subject, text, html }`
+3. **Dedup** — same `source` + `metadata.external_id` updates the existing lead
+4. **Optional** — `YELP_API_KEY` (Fusion) for business search only, not leads
+
+```bash
+cd server
+npm run lead:ingest-test
+```
 
 ---
 
@@ -309,9 +338,10 @@ Typical entities: business settings, services, FAQs, pricing rules, service area
 - [x] Embeddable React widget  
 - [x] QuickBooks OAuth + company API  
 - [x] Supabase schema & business settings  
+- [x] Thumbtack & Yelp lead ingest (webhook + email)  
 - [ ] **Admin dashboard** (`admin/`) — leads, quotes, settings UI  
 - [ ] GoDaddy Bookings deep integration  
-- [ ] Yelp & Thumbtack lead sync  
+- [ ] IMAP worker for auto email pickup  
 - [ ] Email / SMS / WhatsApp channels  
 - [ ] Vercel (or similar) production deploy  
 
