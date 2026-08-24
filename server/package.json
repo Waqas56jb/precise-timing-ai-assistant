@@ -1,0 +1,24 @@
+{
+  "name": "precise-timing-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "qb:connect": "node scripts/qb-connect.js",
+    "qb:refresh": "node scripts/qb-refresh.js",
+    "qb:test": "node scripts/qb-test.js",
+    "qb:migrate-tokens": "node scripts/qb-migrate-tokens.js",
+    "db:migrate": "node scripts/db-migrate.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "open": "^10.1.0",
+    "pg": "^8.23.0",
+    "zod": "^3.24.2"
+  }
+}
