@@ -14,17 +14,121 @@ export async function getLeadById(id) {
   return rows[0] || null;
 }
 
-export async function listLeads({ limit = 50, status = null } = {}) {
-  let sql = `SELECT * FROM ${T.leads}`;
+export async function listLeads({ limit = 50, status = null, source = null } = {}) {
+  const clauses = [];
   const params = [];
+
   if (status) {
-    sql += ` WHERE status = $1`;
     params.push(status);
+    clauses.push(`status = $${params.length}`);
   }
+  if (source) {
+    params.push(source);
+    clauses.push(`source = $${params.length}`);
+  }
+
+  let sql = `SELECT * FROM ${T.leads}`;
+  if (clauses.length) sql += ` WHERE ${clauses.join(' AND ')}`;
   sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
   params.push(limit);
+
   const { rows } = await query(sql, params);
   return rows;
+}
+
+/** Dedup key for Thumbtack / Yelp / Zapier ingest. */
+export async function getLeadByExternalId(source, externalId) {
+  if (!source || !externalId) return null;
+  const { rows } = await query(
+    `SELECT * FROM ${T.leads}
+     WHERE source = $1 AND metadata->>'external_id' = $2
+     ORDER BY updated_at DESC
+     LIMIT 1`,
+    [source, String(externalId)]
+  );
+  return rows[0] || null;
+}
+
+/**
+ * Create or update a lead from an external channel (thumbtack, yelp, email, zapier).
+ * Dedupes on (source + metadata.external_id) when externalId is provided.
+ */
+export async function upsertExternalLead({
+  source,
+  externalId = null,
+  name = null,
+  phone = null,
+  email = null,
+  pickup_address = null,
+  dropoff_address = null,
+  move_date = null,
+  move_size = null,
+  notes = null,
+  status = 'new',
+  metadata = {},
+}) {
+  if (!source) throw new Error('source is required');
+
+  const meta = {
+    ...metadata,
+    ...(externalId != null ? { external_id: String(externalId) } : {}),
+  };
+
+  const existing = externalId ? await getLeadByExternalId(source, externalId) : null;
+
+  if (existing) {
+    const { rows } = await query(
+      `UPDATE ${T.leads}
+       SET name = $1,
+           phone = $2,
+           email = $3,
+           pickup_address = $4,
+           dropoff_address = $5,
+           move_date = $6,
+           move_size = $7,
+           notes = $8,
+           metadata = metadata || $9::jsonb,
+           updated_at = now()
+       WHERE id = $10
+       RETURNING *`,
+      [
+        mergeField(existing.name, name),
+        mergeField(existing.phone, phone),
+        mergeField(existing.email, email),
+        mergeField(existing.pickup_address, pickup_address),
+        mergeField(existing.dropoff_address, dropoff_address),
+        mergeField(existing.move_date, move_date),
+        mergeField(existing.move_size, move_size),
+        mergeField(existing.notes, notes),
+        JSON.stringify(meta),
+        existing.id,
+      ]
+    );
+    return { lead: rows[0], created: false };
+  }
+
+  const { rows } = await query(
+    `INSERT INTO ${T.leads}
+       (name, phone, email, pickup_address, dropoff_address, move_date, move_size,
+        notes, source, status, metadata)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb)
+     RETURNING *`,
+    [
+      name,
+      phone,
+      email,
+      pickup_address,
+      dropoff_address,
+      move_date,
+      move_size,
+      notes,
+      source,
+      status || 'new',
+      JSON.stringify(meta),
+    ]
+  );
+
+  return { lead: rows[0], created: true };
 }
 
 function mergeField(existing, incoming) {
