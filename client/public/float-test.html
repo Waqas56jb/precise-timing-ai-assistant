@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Float embed test (client website footer)</title>
+    <style>
+      body { margin: 0; min-height: 100vh; background: #f5f5f5; font-family: system-ui, sans-serif; }
+      main { padding: 2rem; }
+      footer { padding: 2rem; background: #333; color: #aaa; margin-top: 4rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Client website demo</h1>
+      <p>Footer embed — chat button bottom-right (production style).</p>
+    </main>
+    <footer>
+      © Precise Timing Transports
+      <script src="./embed.js" data-api-url="http://localhost:3001" data-mode="float" defer></script>
+    </footer>
+  </body>
+</html>

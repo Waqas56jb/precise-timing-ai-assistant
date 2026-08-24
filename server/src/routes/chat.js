@@ -6,8 +6,8 @@ import { getPublicBusinessSettings } from '../services/businessSettings.js';
 const router = Router();
 
 const messageSchema = z.object({
-  conversationId: z.string().uuid().optional(),
-  visitorId: z.string().max(100).optional(),
+  conversationId: z.string().uuid().nullish(),
+  visitorId: z.string().max(100).nullish(),
   message: z.string().min(1).max(4000),
 });
 

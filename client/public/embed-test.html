@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Embed.js production test</title>
+    <style>
+      body { margin: 0; min-height: 100vh; background: #f0f0f0; font-family: system-ui, sans-serif; }
+      main { padding: 2rem; }
+      footer { padding: 2rem; background: #222; color: #aaa; margin-top: 4rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Production embed test</h1>
+      <p>Uses built <code>embed.js</code> — run <code>npm run build</code> first.</p>
+    </main>
+    <footer>
+      © Client website footer
+      <script src="./embed.js" data-api-url="http://localhost:3001" defer></script>
+    </footer>
+  </body>
+</html>

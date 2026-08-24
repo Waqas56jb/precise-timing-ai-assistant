@@ -5,15 +5,15 @@ import { getBusinessSettings } from './businessSettings.js';
 async function loadActiveServices() {
   const { rows } = await query(
     `SELECT name, description FROM ${T.services}
-     WHERE is_active = true ORDER BY sort_order ASC, name ASC`
+     WHERE is_active = true ORDER BY sort_order ASC, name ASC LIMIT 8`
   );
   return rows;
 }
 
 async function loadActiveFaqs() {
   const { rows } = await query(
-    `SELECT question, answer, category FROM ${T.faqs}
-     WHERE is_active = true ORDER BY sort_order ASC LIMIT 30`
+    `SELECT question, answer FROM ${T.faqs}
+     WHERE is_active = true ORDER BY sort_order ASC LIMIT 5`
   );
   return rows;
 }
@@ -21,61 +21,70 @@ async function loadActiveFaqs() {
 async function loadActivePricingRules() {
   const { rows } = await query(
     `SELECT pr.name, pr.move_size, pr.base_price, pr.price_per_mile,
-            pr.price_per_hour, pr.min_price, pr.currency, s.name AS service_name
+            pr.min_price, s.name AS service_name
      FROM ${T.pricingRules} pr
      LEFT JOIN ${T.services} s ON s.id = pr.service_id
-     WHERE pr.is_active = true
-     ORDER BY pr.name ASC`
+     WHERE pr.is_active = true ORDER BY pr.name ASC LIMIT 8`
   );
   return rows;
 }
 
 async function loadActiveServiceAreas() {
   const { rows } = await query(
-    `SELECT name, city, state, zip_codes, notes FROM ${T.serviceAreas}
-     WHERE is_active = true ORDER BY name ASC`
+    `SELECT name, city, state FROM ${T.serviceAreas}
+     WHERE is_active = true ORDER BY name ASC LIMIT 10`
   );
   return rows;
 }
 
 function formatPricing(rules) {
-  if (!rules.length) return 'Pricing rules not configured yet. Collect move details and offer to have the team follow up with a quote.';
+  if (!rules.length) return 'Ask team for pricing.';
   return rules
     .map((r) => {
-      const parts = [];
-      if (r.service_name) parts.push(`Service: ${r.service_name}`);
-      if (r.move_size) parts.push(`Move size: ${r.move_size}`);
-      if (r.base_price != null) parts.push(`Base: $${r.base_price}`);
-      if (r.price_per_mile != null) parts.push(`Per mile: $${r.price_per_mile}`);
-      if (r.price_per_hour != null) parts.push(`Per hour: $${r.price_per_hour}`);
-      if (r.min_price != null) parts.push(`Minimum: $${r.min_price}`);
-      return `- ${r.name}: ${parts.join(', ') || 'See admin for details'}`;
+      const parts = [r.move_size || r.name];
+      if (r.base_price != null) parts.push(`$${r.base_price} base`);
+      if (r.price_per_mile != null) parts.push(`$${r.price_per_mile}/mi`);
+      if (r.min_price != null) parts.push(`min $${r.min_price}`);
+      return `- ${parts.join(', ')}`;
     })
     .join('\n');
 }
 
 function formatAreas(areas) {
-  if (!areas.length) return 'Service areas not configured yet. Ask for pickup and dropoff addresses.';
-  return areas
-    .map((a) => {
-      const loc = [a.name, a.city, a.state].filter(Boolean).join(', ');
-      const zips = a.zip_codes?.length ? ` (ZIPs: ${a.zip_codes.join(', ')})` : '';
-      return `- ${loc}${zips}${a.notes ? ` — ${a.notes}` : ''}`;
-    })
-    .join('\n');
+  if (!areas.length) return 'Ask pickup/dropoff city or ZIP.';
+  return areas.map((a) => `- ${[a.name, a.city, a.state].filter(Boolean).join(', ')}`).join('\n');
 }
 
 function formatFaqs(faqs) {
-  if (!faqs.length) return 'No FAQs configured.';
-  return faqs.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
+  if (!faqs.length) return '';
+  return faqs.map((f) => `- ${f.question} → ${f.answer}`).join('\n');
 }
 
-function formatServices(services) {
-  if (!services.length) return 'Local moving and delivery services.';
-  return services.map((s) => `- ${s.name}${s.description ? `: ${s.description}` : ''}`).join('\n');
+function formatLeadMemory(lead) {
+  if (!lead) return '';
+
+  const known = [];
+  if (lead.name) known.push(`Name: ${lead.name}`);
+  if (lead.phone) known.push(`Phone: ${lead.phone}`);
+  if (lead.email) known.push(`Email: ${lead.email}`);
+  if (lead.pickup_address) known.push(`Pickup: ${lead.pickup_address}`);
+  if (lead.dropoff_address) known.push(`Dropoff: ${lead.dropoff_address}`);
+  if (lead.move_date) known.push(`Date: ${lead.move_date}`);
+  if (lead.move_size) known.push(`Size: ${lead.move_size}`);
+
+  if (!known.length) return '';
+  return `\n## Customer memory (do NOT re-ask)\n${known.join('\n')}`;
 }
 
-export async function buildSystemPrompt() {
+let cachedBasePrompt = null;
+let cacheTime = 0;
+const CACHE_MS = 3 * 60 * 1000;
+
+async function buildBasePrompt() {
+  if (cachedBasePrompt && Date.now() - cacheTime < CACHE_MS) {
+    return cachedBasePrompt;
+  }
+
   const [settings, services, faqs, pricing, areas] = await Promise.all([
     getBusinessSettings(),
     loadActiveServices(),
@@ -85,41 +94,46 @@ export async function buildSystemPrompt() {
   ]);
 
   const name = settings?.business_name || 'Precise Timing Transports';
-  const phone = settings?.business_phone || 'Ask admin for phone number';
-  const email = settings?.business_email || '';
+  const phone = settings?.business_phone || '';
   const bookingUrl = settings?.godaddy_booking_url || '';
   const extra = settings?.chatbot_system_prompt_extra || '';
+  const servicesList = services.length
+    ? services.map((s) => s.name).join(', ')
+    : 'Local moving & delivery';
 
-  return `You are the friendly AI assistant for ${name}, a US moving and delivery business.
+  cachedBasePrompt = { name, phone, bookingUrl, extra, servicesList, areas, pricing, faqs };
+  cacheTime = Date.now();
+  return cachedBasePrompt;
+}
 
-Your goals:
-1. Answer customer questions clearly and professionally.
-2. Help customers get price quotes by collecting: pickup address, dropoff address, move date, move size (studio/1BR/2BR/etc.), and any special items.
-3. Help with booking questions. ${bookingUrl ? `When ready to book, share this GoDaddy booking link: ${bookingUrl}` : 'Booking link will be provided by the team — collect details for follow-up.'}
-4. Capture lead info when the customer shows intent: name, phone, and email.
+export async function buildSystemPrompt(_conversationId = null, lead = null) {
+  const [base, leadMemory] = await Promise.all([
+    buildBasePrompt(),
+    Promise.resolve(formatLeadMemory(lead)),
+  ]);
 
-Business contact:
-- Phone: ${phone}
-${email ? `- Email: ${email}` : ''}
-${settings?.website_url ? `- Website: ${settings.website_url}` : ''}
-${settings?.address ? `- Address: ${settings.address}` : ''}
+  const { name, phone, bookingUrl, extra, servicesList, areas, pricing, faqs } = base;
 
-Services offered:
-${formatServices(services)}
+  return `You are the assistant for ${name} (US moving/delivery).
 
-Service areas:
-${formatAreas(areas)}
+## Style
+- Helpful and concise: ~4-6 sentences, or a brief intro plus 2-4 bullet points.
+- Professional tone. Use **bold** for key details; use bullet lists with dashes.
+- Keep markdown tight — no ### headings, no extra blank lines between lines.
+- One question at a time for quotes. Use conversation memory — never repeat.
 
-Pricing guidelines (use for estimates; mention final price may vary after details):
-${formatPricing(pricing)}
+## Quote order
+1. Move size → 2. Pickup → 3. Dropoff → 4. Date → 5. Name → 6. Phone/email
 
-FAQs:
-${formatFaqs(faqs)}
+## Booking
+${bookingUrl ? `Link: ${bookingUrl}` : 'Team sends link after details.'}
 
-Rules:
-- Be concise, warm, and helpful. Use short paragraphs.
-- Never invent prices outside the pricing guidelines above.
-- If you cannot answer something, offer to have the team follow up and ask for phone/email.
-- Do not mention OpenAI, APIs, or that you are an AI unless asked directly.
-${extra ? `\nAdditional business instructions:\n${extra}` : ''}`.trim();
+Phone: ${phone || 'after lead'} | Services: ${servicesList}
+
+Areas: ${formatAreas(areas)}
+Pricing: ${formatPricing(pricing)}
+${formatFaqs(faqs) ? `FAQs: ${formatFaqs(faqs)}` : ''}
+${leadMemory}
+
+Rules: No invented prices. No AI mention.${extra ? ` ${extra}` : ''}`.trim();
 }

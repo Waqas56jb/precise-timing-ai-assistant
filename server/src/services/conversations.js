@@ -54,10 +54,27 @@ export async function getConversationWithMessages(conversationId) {
   return { ...conversation, messages };
 }
 
-/** OpenAI chat format from stored messages (excludes system). */
+/** Last N messages for OpenAI context (memory). */
 export async function getChatHistory(conversationId, limit = 20) {
-  const messages = await getMessages(conversationId, limit);
-  return messages
-    .filter((m) => m.role === 'user' || m.role === 'assistant')
-    .map((m) => ({ role: m.role, content: m.content }));
+  const { rows } = await query(
+    `SELECT role, content FROM ${T.messages}
+     WHERE conversation_id = $1 AND role IN ('user', 'assistant')
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [conversationId, limit]
+  );
+  return rows.reverse().map((m) => ({ role: m.role, content: m.content }))
+    .filter((m) => typeof m.content === 'string' && m.content.trim());
+}
+
+export async function getRecentMessages(conversationId, limit = 20) {
+  const { rows } = await query(
+    `SELECT id, role, content, tokens_used, created_at
+     FROM ${T.messages}
+     WHERE conversation_id = $1
+     ORDER BY created_at DESC
+     LIMIT $2`,
+    [conversationId, limit]
+  );
+  return rows.reverse();
 }

@@ -11,7 +11,9 @@
     "qb:test": "node scripts/qb-test.js",
     "qb:migrate-tokens": "node scripts/qb-migrate-tokens.js",
     "db:migrate": "node scripts/db-migrate.js",
-    "chat:test": "node scripts/chat-test.js"
+    "chat:test": "node scripts/chat-test.js",
+    "db:seed-pricing": "node scripts/seed-pricing.js",
+    "lead:test": "node scripts/lead-test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
