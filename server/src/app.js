@@ -5,6 +5,8 @@ import businessSettingsRouter from './routes/businessSettings.js';
 import chatRouter from './routes/chat.js';
 import leadsRouter from './routes/leads.js';
 import quotesRouter from './routes/quotes.js';
+import thumbtackRouter from './routes/thumbtack.js';
+import yelpRouter from './routes/yelp.js';
 
 export function createApp() {
   const app = express();
@@ -13,10 +15,10 @@ export function createApp() {
     cors({
       origin: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Webhook-Secret'],
     })
   );
-  app.use(express.json());
+  app.use(express.json({ limit: '1mb' }));
 
   app.get('/health', (_req, res) => {
     res.json({ ok: true, service: 'precise-timing-server' });
@@ -27,6 +29,8 @@ export function createApp() {
   app.use('/api/chat', chatRouter);
   app.use('/api/leads', leadsRouter);
   app.use('/api/quotes', quotesRouter);
+  app.use('/api/thumbtack', thumbtackRouter);
+  app.use('/api/yelp', yelpRouter);
 
   app.use((err, _req, res, _next) => {
     console.error(err);

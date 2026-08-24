@@ -7,7 +7,8 @@ router.get('/', async (req, res) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 50, 100);
     const status = req.query.status || null;
-    const leads = await listLeads({ limit, status });
+    const source = req.query.source || null;
+    const leads = await listLeads({ limit, status, source });
     res.json(leads);
   } catch (err) {
     res.status(500).json({ error: err.message });

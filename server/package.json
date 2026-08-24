@@ -13,7 +13,8 @@
     "db:migrate": "node scripts/db-migrate.js",
     "chat:test": "node scripts/chat-test.js",
     "db:seed-pricing": "node scripts/seed-pricing.js",
-    "lead:test": "node scripts/lead-test.js"
+    "lead:test": "node scripts/lead-test.js",
+    "lead:ingest-test": "node scripts/lead-ingest-test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
