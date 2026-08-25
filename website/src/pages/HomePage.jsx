@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
-import QuoteForm from '../components/QuoteForm';
+import ContactSection from '../components/ContactSection';
 import { HOME, IMAGES, SITE } from '../data/site';
 import { BLOG_POSTS } from '../data/blog';
 import {
@@ -13,8 +13,6 @@ import {
   TrashIcon,
   BuildingIcon,
   ArrowRightIcon,
-  PhoneIcon,
-  MailIcon,
   StarIcon,
 } from '../components/icons';
 
@@ -383,60 +381,7 @@ export default function HomePage() {
       </section>
 
       {/* ============ CONTACT ============ */}
-      <section className="pt-section" id="contact">
-        <div className="pt-container home-quote-wrap">
-          <Reveal variant="left">
-            <p className="pt-kicker">Contact Us</p>
-            <h2>Let’s get you moved</h2>
-            <p className="pt-lead">{HOME.contactIntro}</p>
-
-            <div className="contact-info-card" style={{ marginTop: '1.5rem' }}>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <PhoneIcon />
-                </span>
-                <div>
-                  <strong>Call or text us</strong>
-                  <a href={`tel:${SITE.phoneTel}`}>{SITE.phoneDisplay}</a>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <MailIcon />
-                </span>
-                <div>
-                  <strong>Email</strong>
-                  <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <MapPinIcon />
-                </span>
-                <div>
-                  <strong>{SITE.serviceAreaTitle}</strong>
-                  <span className="ci-val">{SITE.serviceArea}</span>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <ClockIcon />
-                </span>
-                <div>
-                  <strong>Hours</strong>
-                  <span className="ci-val">
-                    Mon 8:00 am – 6:00 pm · Tue–Fri 9:00 am – 5:00 pm · Sat &amp; Sun by appointment
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal variant="right">
-            <QuoteForm />
-          </Reveal>
-        </div>
-      </section>
+      <ContactSection id="contact" title="Let’s get you moved" lead={HOME.contactIntro} />
 
       {/* ============ BLOG ============ */}
       <section className="pt-section pt-section--tint">

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import Reveal from '../components/Reveal';
-import QuoteForm from '../components/QuoteForm';
-import { IMAGES, SERVICES_PAGE, SITE } from '../data/site';
+import ContactSection from '../components/ContactSection';
+import { IMAGES, SERVICES_PAGE } from '../data/site';
 import {
   TruckIcon,
   MuscleIcon,
@@ -10,10 +10,6 @@ import {
   BoxIcon,
   BuildingIcon,
   ArrowRightIcon,
-  MailIcon,
-  PhoneIcon,
-  MapPinIcon,
-  ClockIcon,
 } from '../components/icons';
 
 const ICONS = {
@@ -74,58 +70,12 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section className="pt-section pt-section--tint" id="contact">
-        <div className="pt-container home-quote-wrap">
-          <Reveal variant="left">
-            <p className="pt-kicker">{SERVICES_PAGE.contactTitle}</p>
-            <h2>{SERVICES_PAGE.quoteCta}</h2>
-            <p className="pt-lead">{SERVICES_PAGE.proof}</p>
-            <div className="contact-info-card" style={{ marginTop: '1.5rem' }}>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <PhoneIcon />
-                </span>
-                <div>
-                  <strong>Call or text us</strong>
-                  <a href={`tel:${SITE.phoneTel}`}>{SITE.phoneDisplay}</a>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <MailIcon />
-                </span>
-                <div>
-                  <strong>{SERVICES_PAGE.emailCta}</strong>
-                  <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <MapPinIcon />
-                </span>
-                <div>
-                  <strong>{SITE.serviceAreaTitle}</strong>
-                  <span className="ci-val">{SITE.serviceArea}</span>
-                </div>
-              </div>
-              <div className="contact-info-card__row">
-                <span className="ci-ic">
-                  <ClockIcon />
-                </span>
-                <div>
-                  <strong>Hours</strong>
-                  <span className="ci-val">
-                    Mon 8:00 am – 6:00 pm · Tue–Fri 9:00 am – 5:00 pm · Sat &amp; Sun by appointment
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-          <Reveal variant="right">
-            <QuoteForm />
-          </Reveal>
-        </div>
-      </section>
+      <ContactSection
+        id="contact"
+        kicker={SERVICES_PAGE.contactTitle}
+        title={SERVICES_PAGE.quoteCta}
+        lead={SERVICES_PAGE.proof}
+      />
     </>
   );
 }

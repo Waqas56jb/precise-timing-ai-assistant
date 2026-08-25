@@ -33,7 +33,7 @@ const TYPE_OVERRIDES = { date: 'date', stairs: 'number' };
 
 const SERVICE_CHIPS = ['Moving', 'Labor only', 'Delivery', 'Junk removal'];
 
-export default function QuoteForm() {
+export default function QuoteForm({ flat = false }) {
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState(() =>
     Object.fromEntries([...QUOTE_FIELDS.map((f) => [f.name, '']), ['details', '']])
@@ -58,7 +58,7 @@ export default function QuoteForm() {
   };
 
   return (
-    <div className="quote-card" id="quote-form">
+    <div className={`quote-card ${flat ? 'quote-card--flat' : ''}`} id="quote-form">
       <div className="quote-card__head">
         <span className="quote-card__head-icon">
           <SendIcon width={22} height={22} />
