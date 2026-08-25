@@ -1361,6 +1361,39 @@ a.contact-shell__row:hover {
   color: var(--pt-blue-600);
 }
 
+.quote-form__error {
+  grid-column: 1 / -1;
+  padding: 0.95rem 1.1rem;
+  border-radius: 13px;
+  background: #fdf1f1;
+  border: 1px solid #e8b4b4;
+  color: #a13232;
+  font-weight: 650;
+  font-size: 0.92rem;
+  animation: pt-rise 0.4s var(--pt-ease) both;
+}
+
+.quote-form__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: qf-spin 0.7s linear infinite;
+}
+
+@keyframes qf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.quote-form__submit:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
 .quote-form__submit {
   width: 100%;
   position: relative;

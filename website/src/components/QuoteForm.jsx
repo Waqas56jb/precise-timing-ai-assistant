@@ -33,11 +33,15 @@ const TYPE_OVERRIDES = { date: 'date', stairs: 'number' };
 
 const SERVICE_CHIPS = ['Moving', 'Labor only', 'Delivery', 'Junk removal'];
 
+const API_BASE = import.meta.env.VITE_CHAT_API_URL || 'http://localhost:3001';
+
+const EMPTY_FORM = () =>
+  Object.fromEntries([...QUOTE_FIELDS.map((f) => [f.name, '']), ['details', '']]);
+
 export default function QuoteForm({ flat = false }) {
-  const [sent, setSent] = useState(false);
-  const [form, setForm] = useState(() =>
-    Object.fromEntries([...QUOTE_FIELDS.map((f) => [f.name, '']), ['details', '']])
-  );
+  const [status, setStatus] = useState('idle'); // idle | sending | success | error
+  const [errorMsg, setErrorMsg] = useState('');
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -46,15 +50,30 @@ export default function QuoteForm({ flat = false }) {
 
   const setService = (value) => setForm((prev) => ({ ...prev, service: value }));
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // Frontend only for now — backend wiring comes later
-    const subject = encodeURIComponent(`Quote request — ${form.service || 'service'}`);
-    const lines = QUOTE_FIELDS.map((f) => `${f.label}: ${form[f.name] || ''}`);
-    if (form.details) lines.push(`Additional details: ${form.details}`);
-    const body = encodeURIComponent(lines.join('\n'));
-    window.location.href = `mailto:${SITE.email}?subject=${subject}&body=${body}`;
-    setSent(true);
+    setStatus('sending');
+    setErrorMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
+      setStatus('success');
+      setForm(EMPTY_FORM());
+    } catch (err) {
+      setStatus('error');
+      setErrorMsg(
+        err.message === 'Failed to fetch'
+          ? `We couldn't reach the server. Please try again, or email us at ${SITE.email}.`
+          : err.message
+      );
+    }
   };
 
   return (
@@ -139,16 +158,33 @@ export default function QuoteForm({ flat = false }) {
           </div>
         </div>
 
-        {sent && (
-          <p className="quote-form__success">
-            <CheckIcon width={15} height={15} /> Opening your email app to send the quote request to{' '}
-            {SITE.email}…
+        {status === 'success' && (
+          <p className="quote-form__success qf-full">
+            <CheckIcon width={15} height={15} /> Thank you! Your quote request has been sent — we
+            respond within 48 hours, often much faster.
+          </p>
+        )}
+        {status === 'error' && (
+          <p className="quote-form__error qf-full" role="alert">
+            {errorMsg}
           </p>
         )}
 
         <div className="qf-full">
-          <button type="submit" className="pt-btn pt-btn--primary pt-btn--lg quote-form__submit">
-            Send My Quote Request <SendIcon width={17} height={17} />
+          <button
+            type="submit"
+            className="pt-btn pt-btn--primary pt-btn--lg quote-form__submit"
+            disabled={status === 'sending'}
+          >
+            {status === 'sending' ? (
+              <>
+                Sending… <span className="quote-form__spinner" aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                Send My Quote Request <SendIcon width={17} height={17} />
+              </>
+            )}
           </button>
         </div>
 
