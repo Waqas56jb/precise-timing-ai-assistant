@@ -230,13 +230,71 @@ export default function QuoteForm({ flat = false }) {
 
         <div className="qf-full">
           <span className="qf-label">Attach Files</span>
-          <div className="quote-form__dropzone" title="File upload connects when the backend is ready">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPT}
+            multiple
+            hidden
+            onChange={(e) => {
+              addFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+          <button
+            type="button"
+            className={`quote-form__dropzone ${dragOver ? 'is-dragover' : ''}`}
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+          >
             <PaperclipIcon width={20} height={20} />
             <div>
-              <strong>Attachments (0)</strong>
-              <p>Photo uploads connect when the backend is ready — for now, mention photos in the message.</p>
+              <strong>Attachments ({files.length}/{MAX_FILES})</strong>
+              <p>
+                Click or drop photos of your items here — images, PDF, or Word files, up to{' '}
+                {MAX_FILES} files.
+              </p>
             </div>
-          </div>
+          </button>
+
+          {files.length > 0 && (
+            <ul className="quote-form__files">
+              {files.map((f) => (
+                <li key={f.id} className="quote-form__file">
+                  {f.preview ? (
+                    <img src={f.preview} alt="" />
+                  ) : (
+                    <span className="quote-form__file-ic">
+                      <PaperclipIcon width={16} height={16} />
+                    </span>
+                  )}
+                  <span className="quote-form__file-name">
+                    {f.file.name}
+                    <small>{formatBytes(f.file.size)}</small>
+                  </span>
+                  <button
+                    type="button"
+                    className="quote-form__file-remove"
+                    aria-label={`Remove ${f.file.name}`}
+                    onClick={() => removeFile(f.id)}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {fileError && (
+            <p className="quote-form__file-error" role="alert">
+              {fileError}
+            </p>
+          )}
         </div>
 
         {status === 'success' && (

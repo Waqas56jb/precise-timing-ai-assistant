@@ -1297,18 +1297,29 @@ a.contact-shell__row:hover {
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  width: 100%;
   margin-top: 0.45rem;
   padding: 1rem 1.15rem;
   border: 1.5px dashed var(--pt-blue-400);
   border-radius: 14px;
   background: var(--pt-blue-50);
   color: var(--pt-blue-800);
-  cursor: not-allowed;
-  transition: background 0.25s ease;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
 }
 
 .quote-form__dropzone:hover {
   background: var(--pt-blue-100);
+  border-color: var(--pt-blue-600);
+}
+
+.quote-form__dropzone.is-dragover {
+  background: var(--pt-blue-100);
+  border-color: var(--pt-blue-600);
+  border-style: solid;
+  transform: scale(1.01);
 }
 
 .quote-form__dropzone svg {
@@ -1325,6 +1336,89 @@ a.contact-shell__row:hover {
   margin: 0;
   font-size: 0.8rem;
   color: var(--pt-muted);
+}
+
+/* Attached file chips */
+.quote-form__files {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quote-form__file {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  background: var(--pt-white);
+  box-shadow: var(--pt-shadow-sm);
+  animation: pt-rise 0.3s var(--pt-ease) both;
+}
+
+.quote-form__file img {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.quote-form__file-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--pt-blue-50);
+  color: var(--pt-blue-600);
+  flex-shrink: 0;
+}
+
+.quote-form__file-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 650;
+  color: var(--pt-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-form__file-name small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--pt-muted);
+}
+
+.quote-form__file-remove {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: var(--pt-blue-50);
+  color: var(--pt-blue-800);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.quote-form__file-remove:hover {
+  background: #fdecec;
+  color: #b23c3c;
+}
+
+.quote-form__file-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #a13232;
 }
 
 .quote-form__note {
