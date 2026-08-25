@@ -23,13 +23,13 @@ export default function ContactSection({ id, kicker = 'Contact Us', title, lead 
             <p className="contact-shell__lead">{lead}</p>
 
             <div className="contact-shell__rows">
-              <a className="contact-shell__row" href={`tel:${SITE.phoneTel}`}>
+              <a className="contact-shell__row" href={SITE.phoneHref}>
                 <span className="contact-shell__ic">
                   <PhoneIcon />
                 </span>
                 <span>
-                  <strong>Call or text us</strong>
-                  {SITE.phoneDisplay}
+                  <strong>Text us</strong>
+                  {SITE.phoneDisplay} · {SITE.phoneLabel}
                 </span>
               </a>
 

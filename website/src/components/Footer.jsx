@@ -100,8 +100,9 @@ export default function Footer() {
           <div>
             <h4>Contact &amp; Hours</h4>
             <div className="pt-footer__contact">
-              <a href={`tel:${SITE.phoneTel}`}>
+              <a href={SITE.phoneHref}>
                 <PhoneIcon /> {SITE.phoneDisplay}
+                <span style={{ opacity: 0.7 }}> · {SITE.phoneLabel}</span>
               </a>
               <a href={`mailto:${SITE.email}`}>
                 <MailIcon /> {SITE.email}

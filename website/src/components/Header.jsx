@@ -55,8 +55,9 @@ export default function Header() {
       <div className="pt-topbar">
         <div className="pt-container pt-topbar__inner">
           <div className="pt-topbar__group">
-            <a href={`tel:${SITE.phoneTel}`}>
+            <a href={SITE.phoneHref}>
               <PhoneIcon width={13} height={13} /> {SITE.phoneDisplay}
+              <span style={{ opacity: 0.75 }}> · {SITE.phoneLabel}</span>
             </a>
             <a className="pt-topbar__item--email" href={`mailto:${SITE.email}`}>
               <MailIcon width={13} height={13} /> {SITE.email}
@@ -213,8 +214,8 @@ export default function Header() {
           </Link>
 
           <div className="pt-drawer__contact">
-            <a href={`tel:${SITE.phoneTel}`}>
-              <PhoneIcon width={15} height={15} /> {SITE.phoneDisplay}
+            <a href={SITE.phoneHref}>
+              <PhoneIcon width={15} height={15} /> {SITE.phoneDisplay} ({SITE.phoneLabel})
             </a>
             <a href={`mailto:${SITE.email}`}>
               <MailIcon width={15} height={15} /> {SITE.email}

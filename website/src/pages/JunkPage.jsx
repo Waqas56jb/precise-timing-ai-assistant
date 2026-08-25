@@ -59,8 +59,8 @@ export default function JunkPage() {
             </Reveal>
             <Reveal className="aside-help" variant="right" delay={120}>
               <h3>Questions? Talk to us</h3>
-              <a href={`tel:${SITE.phoneTel}`}>
-                <PhoneIcon /> {SITE.phoneDisplay}
+              <a href={SITE.phoneHref}>
+                <PhoneIcon /> {SITE.phoneDisplay} · {SITE.phoneLabel}
               </a>
               <a href={`mailto:${SITE.email}`}>
                 <MailIcon /> {SITE.email}
