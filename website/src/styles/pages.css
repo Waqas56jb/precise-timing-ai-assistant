@@ -690,6 +690,8 @@
   border: 1px solid var(--pt-border);
   box-shadow: var(--pt-shadow-lg);
   background: var(--pt-white);
+  width: 100%;
+  min-width: 0;
 }
 
 .contact-shell__info {
@@ -820,10 +822,56 @@ a.contact-shell__row:hover {
 @media (max-width: 960px) {
   .contact-shell {
     grid-template-columns: 1fr;
+    border-radius: var(--pt-radius);
+  }
+
+  .contact-shell__info {
+    padding: 1.5rem 1.25rem;
   }
 
   .contact-shell__creds {
     text-align: left;
+  }
+
+  .quote-card--flat {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-shell {
+    border-radius: 16px;
+  }
+
+  .contact-shell__info {
+    padding: 1.25rem 1rem;
+  }
+
+  .contact-shell__info h2 {
+    font-size: 1.45rem;
+  }
+
+  .contact-shell__lead {
+    font-size: 0.95rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .contact-shell__row {
+    padding: 0.7rem 0.65rem;
+    gap: 0.7rem;
+    font-size: 0.88rem;
+  }
+
+  .contact-shell__ic {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+
+  .contact-shell__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
   }
 }
 
@@ -837,6 +885,8 @@ a.contact-shell__row:hover {
   box-shadow: var(--pt-shadow);
   overflow: hidden;
   isolation: isolate;
+  min-width: 0;
+  width: 100%;
 }
 
 .quote-card::before {
@@ -888,7 +938,7 @@ a.contact-shell__row:hover {
 
 .quote-card__head > div {
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
 }
 
 .quote-card h3 {
@@ -1017,12 +1067,13 @@ a.contact-shell__row:hover {
 .quote-form input,
 .quote-form textarea {
   width: 100%;
+  max-width: 100%;
   border: 1.5px solid var(--pt-border);
   border-radius: 14px;
   padding: 0.9rem 1rem 0.9rem 2.75rem;
   background: var(--pt-blue-50);
   color: var(--pt-ink);
-  font-size: 0.95rem;
+  font-size: 1rem; /* 16px — prevents iOS auto-zoom on focus */
   transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease,
     transform 0.25s var(--pt-ease);
 }
@@ -1150,14 +1201,98 @@ a.contact-shell__row:hover {
   transform: translateX(4px) rotate(8deg);
 }
 
-@media (max-width: 620px) {
+@media (max-width: 720px) {
   .quote-form {
     grid-template-columns: 1fr;
+    gap: 0.95rem;
+  }
+
+  .quote-card {
+    padding: 1.25rem 1rem 1.4rem;
+  }
+
+  .quote-card__head {
+    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+    padding-bottom: 1rem;
+  }
+
+  .quote-card__head-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .quote-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .quote-card__sub {
+    font-size: 0.88rem;
   }
 
   .quote-card__badges {
     flex-direction: row;
+    flex-wrap: wrap;
     width: 100%;
+  }
+
+  .quote-card__badges span {
+    white-space: normal;
+    font-size: 0.7rem;
+  }
+
+  .quote-form__chips {
+    gap: 0.45rem;
+  }
+
+  .quote-form__chip {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .quote-form input,
+  .quote-form textarea {
+    padding: 0.85rem 0.9rem 0.85rem 2.55rem;
+    border-radius: 12px;
+  }
+
+  .qf-icon {
+    left: 0.8rem;
+  }
+
+  .quote-form__dropzone {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.55rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .quote-form__note {
+    align-items: flex-start;
+    line-height: 1.45;
+  }
+
+  .quote-form__success {
+    flex-wrap: wrap;
+    font-size: 0.86rem;
+  }
+
+  .quote-form__submit {
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .quote-card {
+    padding: 1.1rem 0.85rem 1.25rem;
+  }
+
+  .quote-form__chip {
+    flex: 1 1 calc(50% - 0.45rem);
+    justify-content: center;
   }
 }
 
