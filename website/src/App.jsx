@@ -10,6 +10,8 @@ import JunkPage from './pages/JunkPage';
 import PriceListPage from './pages/PriceListPage';
 import TermsPage from './pages/TermsPage';
 import CancellationPage from './pages/CancellationPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="price-list" element={<PriceListPage />} />
           <Route path="terms-and-conditions" element={<TermsPage />} />
           <Route path="cancellation-policy" element={<CancellationPage />} />
+          <Route path="blog" element={<BlogPage />} />
+          <Route path="blog/:slug" element={<BlogPostPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
 import QuoteForm from '../components/QuoteForm';
 import { HOME, IMAGES, SITE } from '../data/site';
+import { BLOG_POSTS } from '../data/blog';
 import {
   CheckIcon,
   ShieldIcon,
@@ -437,18 +438,43 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ BLOG NOTE ============ */}
-      <section className="pt-section pt-section--tint" style={{ paddingTop: '3rem' }}>
-        <div className="pt-container pt-center">
-          <Reveal>
+      {/* ============ BLOG ============ */}
+      <section className="pt-section pt-section--tint">
+        <div className="pt-container">
+          <Reveal className="pt-center">
             <p className="pt-kicker">{HOME.blogTitle}</p>
+            <h2>Tips from our crew</h2>
             <p className="pt-lead">
-              Blog posts can be connected when content is published. Visit{' '}
-              <a href={SITE.website} target="_blank" rel="noreferrer">
-                precisetimingtransports.com
-              </a>{' '}
-              for the latest updates.
+              Practical advice on moving, delivery, and junk removal — written by the people who do
+              it every day.
             </p>
+          </Reveal>
+          <div className="blog-grid blog-grid--three">
+            {BLOG_POSTS.slice(0, 3).map((post, i) => (
+              <Reveal key={post.slug} delay={i * 90} variant="up">
+                <Link to={`/blog/${post.slug}`} className="blog-card">
+                  <div className="blog-card__media">
+                    <img src={post.image} alt={post.title} loading="lazy" />
+                    <span className="blog-card__tag">{post.tag}</span>
+                  </div>
+                  <div className="blog-card__body">
+                    <p className="blog-card__meta">
+                      {post.date} · {post.readTime}
+                    </p>
+                    <h3>{post.title}</h3>
+                    <p className="blog-card__excerpt">{post.excerpt}</p>
+                    <span className="svc-card__more">
+                      Read article <ArrowRightIcon width={15} height={15} />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal className="pt-center" style={{ marginTop: '2rem' }}>
+            <Link className="pt-btn pt-btn--ghost" to="/blog">
+              View all articles <ArrowRightIcon width={16} height={16} />
+            </Link>
           </Reveal>
         </div>
       </section>

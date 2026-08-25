@@ -58,7 +58,7 @@ export default function Header() {
             <a href={`tel:${SITE.phoneTel}`}>
               <PhoneIcon width={13} height={13} /> {SITE.phoneDisplay}
             </a>
-            <a href={`mailto:${SITE.email}`}>
+            <a className="pt-topbar__item--email" href={`mailto:${SITE.email}`}>
               <MailIcon width={13} height={13} /> {SITE.email}
             </a>
             <span className="pt-topbar__item pt-topbar__item--hours">
@@ -91,8 +91,8 @@ export default function Header() {
         <div className="pt-container pt-header__inner">
           <Link to="/" className="pt-brand" onClick={close}>
             <img
-              src={IMAGES.logo}
-              alt="Elegant gold logo with letter 'P' and text 'PRECISE TIMING TRANSPORTS'."
+              src={IMAGES.logoMark}
+              alt="Precise Timing Transports gold 'P' emblem"
             />
             <span className="pt-brand__text">
               <span className="pt-brand__name">{SITE.name}</span>
@@ -121,6 +121,9 @@ export default function Header() {
 
             <NavLink to="/price-list" className="pt-nav__link">
               Price list
+            </NavLink>
+            <NavLink to="/blog" className="pt-nav__link">
+              Blog
             </NavLink>
             <NavLink to="/f-a-q" className="pt-nav__link">
               F.A.Q.
@@ -163,7 +166,7 @@ export default function Header() {
         <div className="pt-drawer__panel" role="dialog" aria-label="Menu">
           <div className="pt-drawer__head">
             <Link to="/" className="pt-brand" onClick={close}>
-              <img src={IMAGES.logo} alt="Precise Timing Transports logo" />
+              <img src={IMAGES.logoMark} alt="Precise Timing Transports logo" />
               <span className="pt-brand__text">
                 <span className="pt-brand__name">{SITE.name}</span>
               </span>
@@ -189,6 +192,9 @@ export default function Header() {
             <p className="pt-drawer__label">Pricing &amp; help</p>
             <NavLink to="/price-list" onClick={close}>
               Price list
+            </NavLink>
+            <NavLink to="/blog" onClick={close}>
+              Blog
             </NavLink>
             <NavLink to="/f-a-q" onClick={close}>
               F.A.Q.

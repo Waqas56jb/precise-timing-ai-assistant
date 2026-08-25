@@ -33,6 +33,11 @@
 
 html {
   scroll-behavior: smooth;
+  /* `clip` blocks horizontal overflow without creating a scroll container,
+     which keeps position: sticky working (hidden would break it on iOS) */
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -43,7 +48,17 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* Long unbreakable strings (emails, URLs) must never force page overflow */
+a,
+p,
+li,
+td,
+strong,
+span {
+  overflow-wrap: break-word;
 }
 
 img {
@@ -187,6 +202,13 @@ ol {
 .pt-btn--lg {
   padding: 1.05rem 2rem;
   font-size: 1.02rem;
+}
+
+@media (max-width: 480px) {
+  .pt-btn {
+    width: 100%;
+    padding: 0.95rem 1.25rem;
+  }
 }
 
 /* ---------- Sections & typography helpers ---------- */

@@ -21,6 +21,7 @@ const SERVICE_LINKS = [
 const QUICK_LINKS = [
   { label: 'Home', path: '/' },
   { label: 'Price list', path: '/price-list' },
+  { label: 'Blog', path: '/blog' },
   { label: 'F.A.Q.', path: '/f-a-q' },
   { label: 'Terms and conditions', path: '/terms-and-conditions' },
   { label: 'Cancellation policy', path: '/cancellation-policy' },
@@ -46,7 +47,7 @@ export default function Footer() {
         <div className="pt-footer__grid">
           <div>
             <div className="pt-footer__brand">
-              <img src={IMAGES.logo} alt="Precise Timing Transports logo" />
+              <img src={IMAGES.logoMark} alt="Precise Timing Transports logo" />
               <strong>{SITE.name}</strong>
             </div>
             <p>

@@ -2,6 +2,7 @@
 .home-hero {
   position: relative;
   min-height: min(94vh, 860px);
+  min-height: min(94svh, 860px); /* stable on iOS/Android URL-bar resize */
   display: grid;
   align-items: center;
   overflow: hidden;
@@ -104,6 +105,31 @@
 
 .home-hero__trust-item svg {
   color: var(--pt-blue-400);
+  flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+  .home-hero__content {
+    padding: 4.5rem 0 6rem;
+  }
+
+  .home-hero__actions {
+    flex-direction: column;
+  }
+
+  .home-hero__trust {
+    gap: 0.8rem 1.25rem;
+    margin-top: 1.9rem;
+  }
+
+  .home-hero__trust-item {
+    font-size: 0.85rem;
+  }
+
+  .home-hero__badge {
+    font-size: 0.74rem;
+    padding: 0.45rem 0.85rem;
+  }
 }
 
 /* Floating stat card */
@@ -215,6 +241,20 @@
   }
 }
 
+@media (max-width: 480px) {
+  .stats-strip__item {
+    padding: 1.1rem 0.75rem;
+  }
+
+  .stats-strip__item strong {
+    font-size: 1rem;
+  }
+
+  .stats-strip__item span {
+    font-size: 0.78rem;
+  }
+}
+
 /* ================= Split layouts ================= */
 .home-split {
   display: grid;
@@ -256,6 +296,7 @@
   position: absolute;
   left: 1.1rem;
   bottom: 1.1rem;
+  max-width: calc(100% - 2.2rem);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -669,6 +710,10 @@
   align-items: flex-start;
 }
 
+.contact-info-card__row > div {
+  min-width: 0;
+}
+
 .contact-info-card__row .ci-ic {
   flex-shrink: 0;
   width: 44px;
@@ -828,6 +873,18 @@
   max-width: 38rem;
 }
 
+@media (max-width: 640px) {
+  .cta-band {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .cta-band h2 {
+    max-width: none;
+  }
+}
+
 /* ================= Page hero (inner pages) ================= */
 .page-hero {
   position: relative;
@@ -971,6 +1028,12 @@
   top: 110px;
   display: grid;
   gap: 1.25rem;
+}
+
+@media (max-width: 940px) {
+  .svc-aside {
+    position: static;
+  }
 }
 
 .price-card {
@@ -1136,7 +1199,7 @@
 .price-grid {
   display: grid;
   gap: 1.15rem;
-  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(255px, 100%), 1fr));
   margin-top: 1.4rem;
 }
 
@@ -1210,6 +1273,18 @@
   white-space: nowrap;
 }
 
+@media (max-width: 520px) {
+  .rate-pill {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .rate-pill strong {
+    white-space: normal;
+  }
+}
+
 /* ================= Prose (terms / cancellation) ================= */
 .prose-card {
   background: var(--pt-white);
@@ -1247,11 +1322,199 @@
   margin: 1.25rem 0;
 }
 
+/* ================= Blog ================= */
+.blog-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr));
+  margin-top: 2.25rem;
+}
+
+.blog-grid--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.blog-grid--two {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
+@media (max-width: 980px) {
+  .blog-grid--three {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-grid--three,
+  .blog-grid--two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--pt-white);
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.35s var(--pt-ease), box-shadow 0.35s var(--pt-ease);
+}
+
+.blog-card:hover {
+  transform: translateY(-7px);
+  box-shadow: var(--pt-shadow);
+}
+
+.blog-card__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.blog-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--pt-ease);
+}
+
+.blog-card:hover .blog-card__media img {
+  transform: scale(1.06);
+}
+
+.blog-card__tag {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--pt-blue-800);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: var(--pt-shadow-sm);
+}
+
+.blog-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.3rem 1.4rem 1.4rem;
+}
+
+.blog-card__meta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--pt-blue-600);
+  margin: 0 0 0.45rem;
+}
+
+.blog-card__body h3 {
+  font-family: var(--pt-sans);
+  font-weight: 800;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  margin: 0 0 0.55rem;
+}
+
+.blog-card__excerpt {
+  color: var(--pt-muted);
+  font-size: 0.92rem;
+  margin: 0 0 1rem;
+  flex: 1;
+}
+
+/* Blog post detail */
+.blog-post__list {
+  display: grid;
+  gap: 0.6rem;
+  padding-left: 0;
+  list-style: none;
+  margin: 0.25rem 0 1.25rem;
+}
+
+.blog-post__list li {
+  position: relative;
+  padding: 0.65rem 0.9rem 0.65rem 2.3rem;
+  background: var(--pt-blue-50);
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  color: var(--pt-blue-900);
+  font-weight: 600;
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.blog-post__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0.9rem;
+  color: var(--pt-blue-600);
+  font-weight: 800;
+}
+
+.blog-post__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 2.25rem;
+  padding: 1.4rem 1.6rem;
+  border-radius: var(--pt-radius-sm);
+  background: var(--pt-blue-50);
+  border: 1.5px solid var(--pt-blue-100);
+}
+
+.blog-post__cta strong {
+  display: block;
+  color: var(--pt-blue-900);
+  font-size: 1.05rem;
+}
+
+.blog-post__cta p {
+  color: var(--pt-muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 560px) {
+  .blog-post__cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .page-hero__content {
+    padding: 3.5rem 0 2.75rem;
+  }
+
+  .faq-item summary {
+    font-size: 0.94rem;
+    padding: 1rem 3rem 1rem 1.05rem;
+  }
+
+  .quote-card > h3 {
+    font-size: 1.25rem;
+  }
+
+  .process__item {
+    padding: 1.4rem 1.2rem 1.25rem;
+  }
+}
+
 /* ================= Services overview page ================= */
 .service-tiles {
   display: grid;
   gap: 1.15rem;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   margin-top: 1.5rem;
 }
 

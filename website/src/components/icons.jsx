@@ -99,6 +99,40 @@ export const MuscleIcon = (p) => (
   </svg>
 );
 
+export const UserIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+export const CalendarIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </svg>
+);
+
+export const StairsIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 20h4v-4h4v-4h4V8h4V4" />
+    <path d="M3 20h18" />
+  </svg>
+);
+
+export const PaperclipIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+  </svg>
+);
+
+export const SendIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M14.54 22.35a.5.5 0 0 0 .93-.04l6.5-19a.5.5 0 0 0-.63-.63l-19 6.5a.5.5 0 0 0-.04.93l7.66 3.4a1 1 0 0 1 .51.51z" />
+    <path d="m21.85 2.15-11.4 11.4" />
+  </svg>
+);
+
 export const StarIcon = (p) => (
   <svg {...base} {...p} fill="currentColor" strokeWidth="0">
     <path d="M12 2l2.9 6.26L21.5 9.27l-4.75 4.35L18.18 20 12 16.6 5.82 20l1.43-6.38L2.5 9.27l6.6-1.01z" />

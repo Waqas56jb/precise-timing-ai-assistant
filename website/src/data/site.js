@@ -36,27 +36,43 @@ export const SITE = {
 };
 
 /**
- * Imagery — moving/delivery-relevant photography (Unsplash CDN, hotlink-safe)
- * Logo stays on the business CDN.
+ * Imagery — every Unsplash photo below was downloaded and visually verified
+ * to be moving/delivery relevant. Logo PNGs (transparent background) are
+ * generated into /public by scripts/process-logo.mjs.
  */
 export const IMAGES = {
-  logo: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/6C55A365-7863-4A81-8680-6D574B70CFE4.jpeg/:/rs=w:180,h:180,m',
+  logo: '/logo-full.png',
+  logoMark: '/logo-mark.png',
+  // Movers loading a moving truck outside a brownstone
   hero: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1920&q=80',
   movers: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1400&q=80',
-  truck: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1600&q=80',
-  van: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?auto=format&fit=crop&w=1400&q=80',
-  team: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80',
-  handshake: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1400&q=80',
-  house: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80',
-  sofa: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1400&q=80',
-  courier: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80',
-  parcels: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=1400&q=80',
-  cleanout: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80',
+  // White semi truck on the highway
+  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1600&q=80',
+  // Blue semi truck on a wet road
+  van: 'https://images.unsplash.com/photo-1591768793355-74d04bb6608f?auto=format&fit=crop&w=1400&q=80',
+  // Movers by the truck (square crop for the team section)
+  team: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1200&h=900&q=80',
+  // Hands delivering a parcel box
+  handshake: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=1400&q=80',
+  // Moving boxes stacked inside a home
+  house: 'https://images.unsplash.com/photo-1600725935160-f67ee4f6084a?auto=format&fit=crop&w=1400&q=80',
+  // Sofa and furniture staged in a living room
+  sofa: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=1400&q=80',
+  // Delivery courier on the move
+  courier: 'https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?auto=format&fit=crop&w=1200&q=80',
+  // Warehouse pallets with boxed goods
+  parcels: 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=1400&q=80',
+  // Box truck hauling at dusk
+  cleanout: 'https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=1200&q=80',
+  // Gallery
   job1: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=80',
-  job2: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=900&q=80',
-  job3: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=900&q=80',
-  service: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1400&q=80',
-  stockTeam: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
+  job2: 'https://images.unsplash.com/photo-1607166452427-7e4477079cb9?auto=format&fit=crop&w=900&q=80',
+  job3: 'https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?auto=format&fit=crop&w=900&q=80',
+  // Misc
+  service: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1400&q=80',
+  stockTeam: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+  warehouseAisle: 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80',
+  plainBox: 'https://images.unsplash.com/photo-1607166452427-7e4477079cb9?auto=format&fit=crop&w=1200&q=80',
 };
 
 export const NAV = [
