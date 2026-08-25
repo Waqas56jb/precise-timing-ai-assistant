@@ -160,7 +160,7 @@ function buildPlainText(rowsData, transcript) {
   return lines.join('\n');
 }
 
-async function send({ subject, html, text, replyTo }) {
+async function send({ subject, html, text, replyTo, attachments }) {
   if (!isMailerConfigured()) {
     console.warn('Mailer not configured (EMAIL_USER / EMAIL_APP_PASSWORD missing) — skipping email');
     return { sent: false, reason: 'not_configured' };
@@ -173,12 +173,28 @@ async function send({ subject, html, text, replyTo }) {
     html,
     text,
     ...(replyTo ? { replyTo } : {}),
+    ...(attachments?.length
+      ? {
+          attachments: attachments.map((a) => ({
+            filename: a.filename,
+            content: a.content,
+            contentType: a.contentType,
+          })),
+        }
+      : {}),
   });
   return { sent: true, messageId: info.messageId };
 }
 
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes)) return '';
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 /** Website contact / quote form submission. */
-export async function sendContactFormEmail(form) {
+export async function sendContactFormEmail(form, attachments = []) {
   const rowsData = [
     ['Name / Business', form.name],
     ['Service needed', form.service],
@@ -189,6 +205,12 @@ export async function sendContactFormEmail(form) {
     ['Flights of stairs', form.stairs],
     ['Preferred move date', form.date],
     ['Additional details', form.details],
+    [
+      'Attached files',
+      attachments.length
+        ? attachments.map((a) => `${a.filename} (${formatBytes(a.size)})`).join(', ')
+        : '',
+    ],
   ];
 
   const html = buildLeadEmailHtml({
@@ -196,15 +218,18 @@ export async function sendContactFormEmail(form) {
     heading: 'New Quote Request',
     rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
     contact: { email: form.email, phone: form.phone },
-    footNote: 'Submitted through the Request a FREE Quote form on the website.',
+    footNote: attachments.length
+      ? `Submitted through the website quote form — ${attachments.length} file(s) attached to this email.`
+      : 'Submitted through the Request a FREE Quote form on the website.',
   });
 
   const who = form.name || form.email || 'Website visitor';
   return send({
-    subject: `New Quote Request — ${who}${form.service ? ` (${form.service})` : ''}`,
+    subject: `New Quote Request — ${who}${form.service ? ` (${form.service})` : ''}${attachments.length ? ` · ${attachments.length} 📎` : ''}`,
     html,
     text: buildPlainText(rowsData),
     replyTo: form.email || undefined,
+    attachments,
   });
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { QUOTE_FIELDS, SITE } from '../data/site';
 import {
   UserIcon,
@@ -38,10 +38,44 @@ const API_BASE = import.meta.env.VITE_CHAT_API_URL || 'http://localhost:3001';
 const EMPTY_FORM = () =>
   Object.fromEntries([...QUOTE_FIELDS.map((f) => [f.name, '']), ['details', '']]);
 
+/* Attachment limits — the API (Vercel) accepts ~4.5 MB per request */
+const MAX_FILES = 5;
+const MAX_TOTAL_BYTES = 3.5 * 1024 * 1024;
+const ACCEPT = 'image/*,.pdf,.doc,.docx,.txt';
+
+/** Downscale photos in the browser so uploads stay small and fast. */
+async function compressImage(file) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
+function formatBytes(bytes) {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 export default function QuoteForm({ flat = false }) {
   const [status, setStatus] = useState('idle'); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
+  const [files, setFiles] = useState([]); // [{ id, file, preview }]
+  const [fileError, setFileError] = useState('');
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -50,22 +84,69 @@ export default function QuoteForm({ flat = false }) {
 
   const setService = (value) => setForm((prev) => ({ ...prev, service: value }));
 
+  const addFiles = async (incoming) => {
+    setFileError('');
+    const picked = Array.from(incoming || []);
+    if (!picked.length) return;
+
+    let next = [...files];
+    for (const raw of picked) {
+      if (next.length >= MAX_FILES) {
+        setFileError(`You can attach up to ${MAX_FILES} files.`);
+        break;
+      }
+      const file = await compressImage(raw);
+      const total = next.reduce((sum, f) => sum + f.file.size, 0) + file.size;
+      if (total > MAX_TOTAL_BYTES) {
+        setFileError('Attachments are limited to about 3.5 MB in total — some files were not added.');
+        break;
+      }
+      next.push({
+        id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        file,
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+      });
+    }
+    setFiles(next);
+  };
+
+  const removeFile = (id) => {
+    setFiles((prev) => {
+      const target = prev.find((f) => f.id === id);
+      if (target?.preview) URL.revokeObjectURL(target.preview);
+      return prev.filter((f) => f.id !== id);
+    });
+    setFileError('');
+  };
+
+  const clearFiles = () => {
+    files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
+    setFiles([]);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    addFiles(e.dataTransfer?.files);
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setStatus('sending');
     setErrorMsg('');
     try {
-      const res = await fetch(`${API_BASE}/api/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const body = new FormData();
+      Object.entries(form).forEach(([key, value]) => body.append(key, value));
+      files.forEach((f) => body.append('files', f.file, f.file.name));
+
+      const res = await fetch(`${API_BASE}/api/contact`, { method: 'POST', body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || 'Something went wrong. Please try again.');
       }
       setStatus('success');
       setForm(EMPTY_FORM());
+      clearFiles();
     } catch (err) {
       setStatus('error');
       setErrorMsg(
