@@ -7,6 +7,7 @@ import leadsRouter from './routes/leads.js';
 import quotesRouter from './routes/quotes.js';
 import thumbtackRouter from './routes/thumbtack.js';
 import yelpRouter from './routes/yelp.js';
+import inboundEmailRouter from './routes/inboundEmail.js';
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp() {
   app.use('/api/quotes', quotesRouter);
   app.use('/api/thumbtack', thumbtackRouter);
   app.use('/api/yelp', yelpRouter);
+  app.use('/api/inbound-email', inboundEmailRouter);
 
   app.use((err, _req, res, _next) => {
     console.error(err);

@@ -15,12 +15,16 @@ router.get('/status', (_req, res) => {
   res.json({
     ok: true,
     provider: 'yelp',
-    mode: 'webhook_and_email_parse',
+    mode: 'imap_email_poll',
+    business: 'Precise Timing Transports',
+    location: 'Cincinnati, OH 45251',
+    notificationInbox: 'precisetimingtransports@gmail.com',
     fusionConfigured: isYelpFusionConfigured(),
-    note: 'Yelp Leads API is partner-only. Use Zapier/webhook JSON or RAQ emails. Fusion API key is optional for business lookup.',
+    note: 'No Yelp webhook/API on Integrations (Housecall Pro/Calendly only). Capture = IMAP poll Gmail, filter *@yelp.com → leads source=yelp.',
     endpoints: {
       webhook: 'POST /api/yelp/webhook',
       email: 'POST /api/yelp/email',
+      inboundPoll: 'POST /api/inbound-email/poll',
       fusionBusiness: 'GET /api/yelp/business/:id',
       fusionSearch: 'GET /api/yelp/search',
     },

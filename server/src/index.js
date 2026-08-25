@@ -2,6 +2,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { getSupabase } from './lib/supabase.js';
 import { migrateFileTokensToDb } from './services/quickbooks/tokenStore.js';
+import { startEmailWorker } from './services/inbound/emailWorker.js';
 
 const app = createApp();
 
@@ -26,6 +27,12 @@ async function bootstrap() {
     console.log(`Server listening on http://localhost:${env.PORT}`);
     console.log(`Business settings: http://localhost:${env.PORT}/api/business-settings`);
     console.log(`Chat API: http://localhost:${env.PORT}/api/chat/message`);
+    console.log(`Yelp/Thumbtack: http://localhost:${env.PORT}/api/yelp/status`);
+
+    const worker = startEmailWorker();
+    if (!worker.started && worker.reason !== 'EMAIL_WORKER_ENABLED is not true') {
+      console.log(`[email-worker] not started: ${worker.reason}`);
+    }
   });
 }
 

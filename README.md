@@ -317,12 +317,28 @@ Typical entities: business settings, services, FAQs, pricing rules, service area
 
 ## 🧲 Thumbtack & Yelp leads
 
-Official **Thumbtack Partner** and **Yelp Leads** APIs are partner/invite-only. This app ingests leads the practical way:
+Official **Thumbtack Partner** and **Yelp Leads** APIs are partner/invite-only. This app automates leads with **code** (no Zapier required):
 
-1. **Webhook JSON** — Zapier / Make / partner hook → `POST /api/thumbtack/webhook` or `/api/yelp/webhook`
-2. **Email parse** — forward RAQ / Thumbtack notification emails → `POST /api/.../email` with `{ subject, text, html }`
-3. **Dedup** — same `source` + `metadata.external_id` updates the existing lead
-4. **Optional** — `YELP_API_KEY` (Fusion) for business search only, not leads
+### Email worker (recommended)
+
+1. Use the inbox that receives Yelp / Thumbtack notification emails  
+2. Set IMAP vars in `server/.env` (Gmail → App Password)  
+3. Run:
+
+```bash
+cd server
+npm run email:worker      # one poll
+npm run email:watch       # keep polling
+```
+
+Or set `EMAIL_WORKER_ENABLED=true` so the API server polls in the background (needs always-on host, not serverless sleep).
+
+Manual API trigger: `POST /api/inbound-email/poll`
+
+1. **Webhook JSON** — optional Zapier / Make → `POST /api/thumbtack/webhook` or `/api/yelp/webhook`
+2. **Email parse** — `POST /api/.../email` with `{ subject, text, html }`
+3. **Dedup** — same `source` + `metadata.external_id` / Message-ID
+4. **Optional** — `YELP_API_KEY` (Fusion) for business search only
 
 ```bash
 cd server

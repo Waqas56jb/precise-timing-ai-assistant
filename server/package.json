@@ -14,13 +14,17 @@
     "chat:test": "node scripts/chat-test.js",
     "db:seed-pricing": "node scripts/seed-pricing.js",
     "lead:test": "node scripts/lead-test.js",
-    "lead:ingest-test": "node scripts/lead-ingest-test.js"
+    "lead:ingest-test": "node scripts/lead-ingest-test.js",
+    "email:worker": "node scripts/email-worker.js",
+    "email:watch": "node scripts/email-worker.js --watch"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "imapflow": "^1.7.2",
+    "mailparser": "^3.9.15",
     "open": "^10.1.0",
     "openai": "^7.5.0",
     "pg": "^8.23.0",
