@@ -4,17 +4,12 @@ import { IMAGES, SITE } from '../data/site';
 import {
   PhoneIcon,
   MailIcon,
-  ClockIcon,
   MapPinIcon,
   TruckIcon,
   BoxIcon,
   TrashIcon,
   MuscleIcon,
   BuildingIcon,
-  FacebookIcon,
-  TikTokIcon,
-  YelpIcon,
-  YouTubeIcon,
 } from './icons';
 
 const SERVICE_LINKS = [
@@ -52,42 +47,6 @@ export default function Header() {
 
   return (
     <>
-      <div className="pt-topbar">
-        <div className="pt-container pt-topbar__inner">
-          <div className="pt-topbar__group">
-            <a href={SITE.phoneHref}>
-              <PhoneIcon width={13} height={13} /> {SITE.phoneDisplay}
-              <span style={{ opacity: 0.75 }}> · {SITE.phoneLabel}</span>
-            </a>
-            <a className="pt-topbar__item--email" href={`mailto:${SITE.email}`}>
-              <MailIcon width={13} height={13} /> {SITE.email}
-            </a>
-            <span className="pt-topbar__item pt-topbar__item--hours">
-              <ClockIcon width={13} height={13} /> Mon 8am–6pm · Tue–Fri 9am–5pm · Sat/Sun by appointment
-            </span>
-          </div>
-          <div className="pt-topbar__group">
-            <span className="pt-topbar__item pt-topbar__item--area">
-              <MapPinIcon width={13} height={13} /> Serving Cincinnati &amp; the Tri-State
-            </span>
-            <div className="pt-topbar__social">
-              <a href={SITE.social.facebook} target="_blank" rel="noreferrer" aria-label="Facebook">
-                <FacebookIcon width={13} height={13} />
-              </a>
-              <a href={SITE.social.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok">
-                <TikTokIcon width={13} height={13} />
-              </a>
-              <a href={SITE.social.yelp} target="_blank" rel="noreferrer" aria-label="Yelp">
-                <YelpIcon width={13} height={13} />
-              </a>
-              <a href={SITE.social.youtube} target="_blank" rel="noreferrer" aria-label="YouTube">
-                <YouTubeIcon width={13} height={13} />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <header className={`pt-header ${scrolled ? 'is-scrolled' : ''}`}>
         <div className="pt-container pt-header__inner">
           <Link to="/" className="pt-brand" onClick={close}>
