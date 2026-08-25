@@ -4,16 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Precise Timing — Chat Widget</title>
+    <meta
+      name="description"
+      content="Precise Timing Transports AI chat widget preview"
+    />
     <style>
-      html, body { margin: 0; height: 100%; background: #1a1a1a; }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b1826;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .pt-preview-note {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
-    <!-- Dev: auto-detects backend at http://127.0.0.1:3001 when on port 5173 -->
+    <p class="pt-preview-note">Precise Timing · widget preview</p>
+    <!-- Production preview: points at the live API. Override with data-api-url if needed. -->
     <script
       type="module"
       src="/src/embed.jsx"
       data-mode="center"
+      data-api-url="https://precise-timing-ai-assistant-server.vercel.app"
     ></script>
   </body>
 </html>

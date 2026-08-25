@@ -17,14 +17,26 @@ function resolveApiUrl(script) {
   if (attr?.trim()) return attr.trim();
 
   if (typeof window !== 'undefined') {
-    const port = window.location.port;
-    // Local dev (Vite) → hit backend directly; CORS is enabled on server
-    if (port === '5173' || port === '4173') {
+    const { hostname, port, origin } = window.location;
+
+    // Local Vite preview → hit backend directly (CORS enabled on server)
+    if (port === '5173' || port === '4173' || hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://127.0.0.1:3001';
     }
-    return window.location.origin;
+
+    // Known Vercel frontend hosts → production API
+    if (
+      hostname.includes('precise-timing-ai-assistant-website') ||
+      hostname.includes('precise-timing-ai-assistant-client') ||
+      hostname.endsWith('.vercel.app')
+    ) {
+      return 'https://precise-timing-ai-assistant-server.vercel.app';
+    }
+
+    // Same-origin deploy (API proxied / hosted together)
+    return origin;
   }
-  return 'http://127.0.0.1:3001';
+  return 'https://precise-timing-ai-assistant-server.vercel.app';
 }
 
 function getConfigFromScript() {
