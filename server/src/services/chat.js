@@ -13,8 +13,13 @@ import {
   shouldCaptureLead,
   canCalculateQuote,
 } from './leadExtractor.js';
-import { upsertLeadFromExtraction, getLeadByConversationId } from './leads.js';
+import {
+  upsertLeadFromExtraction,
+  getLeadByConversationId,
+  markLeadNotified,
+} from './leads.js';
 import { createOrUpdateQuote } from './quotes.js';
+import { sendChatbotLeadEmail, isMailerConfigured } from './mailer.js';
 
 let openai;
 
@@ -42,6 +47,35 @@ function sanitizeChatMessages(messages) {
   );
 }
 
+function leadFingerprint(lead) {
+  return JSON.stringify([
+    lead.name,
+    lead.phone,
+    lead.email,
+    lead.pickup_address,
+    lead.dropoff_address,
+    lead.move_date,
+    lead.move_size,
+  ]);
+}
+
+/**
+ * Email the company when the chatbot captures a lead. Sends once when the
+ * customer becomes contactable (phone or email), and again only if the core
+ * lead info changes afterwards — never on every chat message.
+ */
+async function notifyChatbotLead(lead, transcript) {
+  if (!lead || !isMailerConfigured()) return;
+  if (!lead.phone && !lead.email) return;
+
+  const fingerprint = leadFingerprint(lead);
+  const previous = lead.metadata?.notify_fingerprint || null;
+  if (previous === fingerprint) return;
+
+  await sendChatbotLeadEmail({ lead, transcript, isUpdate: Boolean(previous) });
+  await markLeadNotified(lead.id, fingerprint);
+}
+
 async function processLeadAndQuote(conversationId) {
   try {
     const messages = await getRecentMessages(conversationId, 20);
@@ -60,6 +94,10 @@ async function processLeadAndQuote(conversationId) {
         conversationId,
         extracted,
       });
+    }
+
+    if (lead) {
+      await notifyChatbotLead(lead, messages);
     }
   } catch (err) {
     console.warn('Background lead/quote sync failed:', err.message);

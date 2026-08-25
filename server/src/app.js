@@ -5,6 +5,7 @@ import businessSettingsRouter from './routes/businessSettings.js';
 import chatRouter from './routes/chat.js';
 import leadsRouter from './routes/leads.js';
 import quotesRouter from './routes/quotes.js';
+import contactRouter from './routes/contact.js';
 import thumbtackRouter from './routes/thumbtack.js';
 import yelpRouter from './routes/yelp.js';
 import inboundEmailRouter from './routes/inboundEmail.js';
@@ -30,6 +31,7 @@ export function createApp() {
   app.use('/api/chat', chatRouter);
   app.use('/api/leads', leadsRouter);
   app.use('/api/quotes', quotesRouter);
+  app.use('/api/contact', contactRouter);
   app.use('/api/thumbtack', thumbtackRouter);
   app.use('/api/yelp', yelpRouter);
   app.use('/api/inbound-email', inboundEmailRouter);

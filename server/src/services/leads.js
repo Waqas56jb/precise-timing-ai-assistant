@@ -135,6 +135,16 @@ function mergeField(existing, incoming) {
   return incoming != null && incoming !== '' ? incoming : existing;
 }
 
+/** Remember which lead snapshot was last emailed so we don't notify twice. */
+export async function markLeadNotified(leadId, fingerprint) {
+  await query(
+    `UPDATE ${T.leads}
+     SET metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb, updated_at = now()
+     WHERE id = $2`,
+    [JSON.stringify({ notify_fingerprint: fingerprint, notified_at: new Date().toISOString() }), leadId]
+  );
+}
+
 export async function upsertLeadFromExtraction({
   conversationId,
   extracted,

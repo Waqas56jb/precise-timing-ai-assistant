@@ -25,6 +25,9 @@ const schema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(''),
   DATABASE_URL: z.string().optional().default(''),
   DATABASE_POOLER_URL: z.string().optional().default(''),
+  EMAIL_USER: z.string().optional().default(''),
+  EMAIL_APP_PASSWORD: z.string().optional().default(''),
+  EMAIL_NOTIFY_TO: z.string().optional().default(''),
 });
 
 const parsed = schema.safeParse(process.env);
