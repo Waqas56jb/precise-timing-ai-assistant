@@ -9,6 +9,7 @@ import contactRouter from './routes/contact.js';
 import thumbtackRouter from './routes/thumbtack.js';
 import yelpRouter from './routes/yelp.js';
 import inboundEmailRouter from './routes/inboundEmail.js';
+import { isMailerConfigured } from './services/mailer.js';
 
 export function createApp() {
   const app = express();
@@ -23,7 +24,11 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/health', (_req, res) => {
-    res.json({ ok: true, service: 'precise-timing-server' });
+    res.json({
+      ok: true,
+      service: 'precise-timing-server',
+      emailConfigured: isMailerConfigured(),
+    });
   });
 
   app.use('/api/quickbooks', quickbooksRouter);

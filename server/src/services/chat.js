@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { waitUntil } from '@vercel/functions';
 import { env } from '../config/env.js';
 import { buildSystemPrompt } from './promptBuilder.js';
 import {
@@ -176,10 +177,13 @@ export async function sendChatMessage({ conversationId, visitorId, message }) {
     tokensUsed,
   });
 
-  // Lead + quote sync in background — do not block the chat reply
-  setImmediate(() => {
-    processLeadAndQuote(conversation.id);
-  });
+  // Lead + quote sync in background — do not block the chat reply.
+  // On Vercel the function freezes right after the response is returned,
+  // killing setImmediate work — waitUntil() keeps it alive until done.
+  const backgroundSync = processLeadAndQuote(conversation.id);
+  if (process.env.VERCEL) {
+    waitUntil(backgroundSync);
+  }
 
   return {
     conversationId: conversation.id,
