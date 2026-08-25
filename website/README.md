@@ -1,16 +1,30 @@
-# React + Vite
+# Precise Timing Transports — Website (frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Elegant blue & white React rebuild of [precisetimingtransports.com](https://precisetimingtransports.com/).
 
-Currently, two official plugins are available:
+**Frontend only** — quote form opens mailto for now; backend later.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Run
 
-## React Compiler
+```bash
+cd website
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Open the local URL Vite prints (usually http://localhost:5173).
 
-## Expanding the Oxlint configuration
+## Pages
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- `/` Home (hero, story, services, gallery, quote form, booking process, hours)
+- `/f-a-q`
+- `/services`
+- `/moving`
+- `/labor-only-moving`
+- `/delivery-services`
+- `/junk-removal`
+- `/price-list`
+- `/terms-and-conditions`
+- `/cancellation-policy`
+
+Content & image URLs live in `src/data/site.js` (scraped from the live GoDaddy site).

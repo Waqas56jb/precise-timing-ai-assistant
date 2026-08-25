@@ -113,10 +113,11 @@ precise-timing-ai-assistant/
 │   ├── sql/                  # Schema migrations
 │   ├── scripts/              # QB connect, migrate, seed, tests
 │   └── .env.example          # Environment template
+├── 📁 website/               # Public marketing site (React, blue/white)
 └── 📄 README.md              # You are here
 ```
 
-> **Strict root rule:** only `admin/`, `client/`, `server/`, and `README.md` live at the repository root.
+> Root apps: `admin/`, `client/`, `server/`, `website/`, plus `README.md`.
 
 ---
 

@@ -35,17 +35,28 @@ export const SITE = {
   serviceAreaTitle: 'Serving Cincinnati & the Tri-State',
 };
 
-/** GoDaddy CDN images from the live site */
+/**
+ * Imagery — moving/delivery-relevant photography (Unsplash CDN, hotlink-safe)
+ * Logo stays on the business CDN.
+ */
 export const IMAGES = {
-  logo: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/6C55A365-7863-4A81-8680-6D574B70CFE4.jpeg',
-  hero: 'https://img1.wsimg.com/isteam/stock/oAaw4eQ/:/rs=w:1920,m',
-  movers: 'https://img1.wsimg.com/isteam/stock/101280/:/cr=t:0%,l:0%,w:100%,h:100%/rs=w:1920,m',
-  team: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/E4275A73-525B-41F0-AB3A-34B4423DD543.jpeg/:/cr=t:0%,l:31.41%,w:37.17%,h:100%/rs=w:721,h:721,cg:true',
-  job1: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/IMG_5429.jpeg/:/cr=t:0%,l:0%,w:100%,h:75%/rs=w:1095,h:1095,cg:true',
-  job2: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/IMG_5581.jpeg/:/cr=t:13.42%,l:13.42%,w:70.42%,h:70.42%/rs=w:1095,cg:true,m',
-  job3: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/IMG_5617.jpeg/:/cr=t:12.5%,l:0%,w:100%,h:75%/rs=w:1095,h:1095,cg:true',
-  service: 'https://img1.wsimg.com/isteam/stock/D1WbWWa/:/rs=w:1350,m',
-  stockTeam: 'https://img1.wsimg.com/isteam/stock/kaw0Nr1/:/cr=t:0%,l:16.67%,w:66.67%,h:100%/rs=w:1095,h:1095,cg:true',
+  logo: 'https://img1.wsimg.com/isteam/ip/8719b41c-9b7c-4400-ab29-94a1ab156b38/6C55A365-7863-4A81-8680-6D574B70CFE4.jpeg/:/rs=w:180,h:180,m',
+  hero: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1920&q=80',
+  movers: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1400&q=80',
+  truck: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1600&q=80',
+  van: 'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?auto=format&fit=crop&w=1400&q=80',
+  team: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80',
+  handshake: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1400&q=80',
+  house: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80',
+  sofa: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1400&q=80',
+  courier: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80',
+  parcels: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=1400&q=80',
+  cleanout: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80',
+  job1: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=80',
+  job2: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=900&q=80',
+  job3: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=900&q=80',
+  service: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=1400&q=80',
+  stockTeam: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
 };
 
 export const NAV = [
