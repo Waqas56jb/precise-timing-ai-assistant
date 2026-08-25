@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import CookieBanner from './CookieBanner';
+import ChatWidget from './ChatWidget';
 
 export default function Layout() {
   const location = useLocation();
@@ -27,6 +28,7 @@ export default function Layout() {
       </main>
       <Footer />
       <CookieBanner />
+      <ChatWidget />
     </div>
   );
 }

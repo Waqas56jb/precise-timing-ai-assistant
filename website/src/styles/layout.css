@@ -752,8 +752,9 @@
 .pt-cookie {
   position: fixed;
   left: 1rem;
-  right: 1rem;
-  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  /* Keep clear of the chat widget launcher in the bottom-right corner */
+  right: 6.5rem;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
   z-index: 120;
   max-width: 430px;
   margin-left: auto;
@@ -777,4 +778,12 @@
   font-size: 0.87rem;
   color: var(--pt-muted);
   margin-bottom: 0.9rem;
+}
+
+@media (max-width: 560px) {
+  .pt-cookie {
+    right: 1rem;
+    /* Sit above the chat launcher instead of beside it */
+    bottom: calc(6.25rem + env(safe-area-inset-bottom, 0px));
+  }
 }
