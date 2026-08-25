@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import Reveal from '../components/Reveal';
 import ContactSection from '../components/ContactSection';
-import { HOME, IMAGES, SITE } from '../data/site';
+import { GALLERY, HOME, IMAGES, PHOTOS, PROMO, SITE } from '../data/site';
 import { BLOG_POSTS } from '../data/blog';
 import {
   CheckIcon,
@@ -20,7 +20,7 @@ const SERVICE_CARDS = [
   {
     ...HOME.services.items[0],
     path: '/moving',
-    image: IMAGES.movers,
+    image: PHOTOS.rampTruck,
     icon: <TruckIcon />,
   },
   {
@@ -32,13 +32,13 @@ const SERVICE_CARDS = [
   {
     ...HOME.services.items[2],
     path: '/delivery-services',
-    image: IMAGES.sofa,
+    image: PHOTOS.paddedVan,
     icon: <BoxIcon />,
   },
   {
     ...HOME.services.items[3],
     path: '/services',
-    image: IMAGES.parcels,
+    image: PHOTOS.wrappedTvs,
     icon: <BuildingIcon />,
   },
 ];
@@ -157,9 +157,9 @@ export default function HomePage() {
             </p>
           </Reveal>
           <Reveal variant="right" className="home-split__media">
-            <img src={IMAGES.van} alt="Delivery van ready for a local delivery run" />
+            <img src={PHOTOS.studioMove} alt="Our van loaded for a same-day studio move in Cincinnati" />
             <span className="home-split__chip">
-              <TruckIcon width={15} height={15} /> Safe &amp; secure handling
+              <TruckIcon width={15} height={15} /> Real job — same-day studio move
             </span>
           </Reveal>
         </div>
@@ -258,9 +258,9 @@ export default function HomePage() {
       <section className="pt-section">
         <div className="pt-container home-split">
           <Reveal variant="left" className="home-split__media">
-            <img src={IMAGES.team} alt="Our experienced and dedicated moving team" />
+            <img src={PHOTOS.crew} alt="Our experienced and dedicated moving team unloading a truck" />
             <span className="home-split__chip">
-              <CheckIcon width={14} height={14} /> Experienced professionals
+              <CheckIcon width={14} height={14} /> Our real crew, on the job
             </span>
           </Reveal>
           <Reveal variant="right">
@@ -294,26 +294,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ GALLERY ============ */}
+      {/* ============ GALLERY — 100% real company photos ============ */}
       <section className="pt-section">
         <div className="pt-container">
           <Reveal className="pt-center">
             <p className="pt-kicker">Our work</p>
             <h2>{HOME.galleryTitle}</h2>
-            <p className="pt-lead">{HOME.galleryCaption}</p>
+            <p className="pt-lead">
+              No stock photos here — every shot below is straight from our crew&rsquo;s camera on
+              real Cincinnati jobs.
+            </p>
           </Reveal>
-          <div className="home-gallery">
-            <Reveal as="figure" variant="up">
-              <img src={IMAGES.job1} alt="Movers in motion loading a truck" loading="lazy" />
-              <figcaption>Movers in motion loading a truck</figcaption>
-            </Reveal>
-            <Reveal as="figure" variant="up" delay={100}>
-              <img src={IMAGES.job2} alt="Carefully packed items ready for delivery" loading="lazy" />
-              <figcaption>Careful handling of every item</figcaption>
-            </Reveal>
-            <Reveal as="figure" variant="up" delay={200}>
-              <img src={IMAGES.job3} alt="Our truck on the road for a delivery" loading="lazy" />
-              <figcaption>On the road — on time</figcaption>
+          <div className="real-gallery">
+            {GALLERY.map((photo, i) => (
+              <Reveal
+                as="figure"
+                key={photo.src}
+                variant="up"
+                delay={(i % 4) * 80}
+                className={`real-gallery__tile${photo.featured ? ' real-gallery__tile--featured' : ''}`}
+              >
+                <img src={photo.src} alt={photo.alt} loading="lazy" />
+                <span className="real-gallery__tag">{photo.tag}</span>
+                <figcaption>{photo.caption}</figcaption>
+              </Reveal>
+            ))}
+            <Reveal as="figure" variant="up" delay={160} className="real-gallery__tile real-gallery__tile--brand">
+              <img src={PHOTOS.brandCard} alt="Precise Timing Transports brand emblem" loading="lazy" />
+              <figcaption>Precise Timing Transports — Cincinnati, OH</figcaption>
             </Reveal>
           </div>
         </div>
@@ -357,6 +365,28 @@ export default function HomePage() {
             <Link className="pt-btn pt-btn--primary" to="/price-list">
               View full price list <ArrowRightIcon width={16} height={16} />
             </Link>
+          </Reveal>
+
+          {/* Senior discount promo */}
+          <Reveal className="promo-band" variant="zoom">
+            <div className="promo-band__media">
+              <img src={PROMO.image} alt="Precise Timing Transports offer — 10% off for seniors" loading="lazy" />
+            </div>
+            <div className="promo-band__body">
+              <span className="promo-band__chip">
+                <StarIcon width={14} height={14} /> Current offer
+              </span>
+              <h3>{PROMO.title}</h3>
+              <p>{PROMO.body}</p>
+              <div className="promo-band__actions">
+                <Link className="pt-btn pt-btn--primary" to="/#contact">
+                  {PROMO.cta} <ArrowRightIcon width={16} height={16} />
+                </Link>
+                <a className="promo-band__phone" href={SITE.phoneHref}>
+                  {SITE.phoneDisplay} · {SITE.phoneLabel}
+                </a>
+              </div>
+            </div>
           </Reveal>
         </div>
       </section>

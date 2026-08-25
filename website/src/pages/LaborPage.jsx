@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import Reveal from '../components/Reveal';
-import { IMAGES, LABOR_PAGE, SITE } from '../data/site';
+import { LABOR_PAGE, PHOTOS, SITE } from '../data/site';
 import { CheckIcon, PhoneIcon, MailIcon, ArrowRightIcon } from '../components/icons';
 
 export default function LaborPage() {
@@ -10,7 +10,7 @@ export default function LaborPage() {
       <PageHero
         title={LABOR_PAGE.title}
         lead={LABOR_PAGE.headline}
-        image={IMAGES.movers}
+        image={PHOTOS.crew}
         crumb="Labor only moving"
       />
       <section className="pt-section">
@@ -33,7 +33,11 @@ export default function LaborPage() {
               ))}
             </ul>
 
-            <img src={IMAGES.team} alt="Our labor crew ready to load and unload" loading="lazy" />
+            <img
+              src={PHOTOS.podsLoading}
+              alt="Our crew loading a PODS storage container with a hand truck"
+              loading="lazy"
+            />
 
             <p className="pt-lead">{LABOR_PAGE.closing}</p>
           </Reveal>

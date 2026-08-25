@@ -38,9 +38,79 @@ export const SITE = {
 };
 
 /**
- * Imagery — every Unsplash photo below was downloaded and visually verified
- * to be moving/delivery relevant. Logo PNGs (transparent background) are
- * generated into /public by scripts/process-logo.mjs.
+ * Real company job photos — converted from the client's originals
+ * (photos-src/*) into web-ready JPEGs by scripts/convert-company-photos.mjs.
+ */
+export const PHOTOS = {
+  paddedVan: '/photos/delivery-1.jpg',
+  crew: '/photos/delivery-2.jpg',
+  brandCard: '/photos/delivery-3.jpg',
+  packedTruck: '/photos/delivery-4.jpg',
+  podsLoading: '/photos/delivery-5.jpg',
+  seniorPromo: '/photos/delivery-6.jpg',
+  wrappedTvs: '/photos/delivery-7.jpg',
+  studioMove: '/photos/delivery-8.jpg',
+  rampTruck: '/photos/delivery-9.jpg',
+};
+
+/** Home page "Real jobs. Real results." gallery — 100% real company photos. */
+export const GALLERY = [
+  {
+    src: PHOTOS.crew,
+    alt: 'Two Precise Timing Transports crew members unloading a box truck',
+    caption: 'Our crew unloading on moving day',
+    tag: 'Our team',
+    featured: true,
+  },
+  {
+    src: PHOTOS.rampTruck,
+    alt: 'Box truck with loading ramp set up on a Cincinnati street',
+    caption: 'Ramp down, ready to roll',
+    tag: 'Moving',
+  },
+  {
+    src: PHOTOS.packedTruck,
+    alt: 'Truck packed wall-to-wall with labeled boxes and a wrapped mattress',
+    caption: 'Packed tight, stacked right',
+    tag: 'Loading',
+  },
+  {
+    src: PHOTOS.podsLoading,
+    alt: 'Crew loading a PODS storage container with a hand truck',
+    caption: 'POD & storage loading',
+    tag: 'Labor only',
+  },
+  {
+    src: PHOTOS.paddedVan,
+    alt: 'Furniture wrapped in moving blankets and strapped inside the van',
+    caption: 'Padded, wrapped & strapped',
+    tag: 'Protection',
+  },
+  {
+    src: PHOTOS.wrappedTvs,
+    alt: 'TVs and monitors individually bubble-wrapped for a commercial job',
+    caption: 'Every screen wrapped individually',
+    tag: 'Commercial',
+  },
+  {
+    src: PHOTOS.studioMove,
+    alt: 'Cargo van loaded for a same-day studio move',
+    caption: 'Same-day studio move',
+    tag: 'Same-day',
+  },
+];
+
+export const PROMO = {
+  image: PHOTOS.seniorPromo,
+  title: 'Move with ease — 10% off for seniors',
+  body: 'We proudly offer seniors 10% off any moving, delivery, or junk removal service. Mention the discount when you request your free quote.',
+  cta: 'Get a FREE Quote',
+};
+
+/**
+ * Supporting imagery — remaining Unsplash photos below were downloaded and
+ * visually verified to be moving/delivery relevant. Logo PNGs (transparent
+ * background) are generated into /public by scripts/process-logo.mjs.
  */
 export const IMAGES = {
   logo: '/logo-full.png',

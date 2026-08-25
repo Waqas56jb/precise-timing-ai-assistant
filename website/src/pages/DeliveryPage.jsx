@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import Reveal from '../components/Reveal';
-import { DELIVERY_PAGE, IMAGES, SITE } from '../data/site';
+import { DELIVERY_PAGE, PHOTOS, SITE } from '../data/site';
 import { CheckIcon, PhoneIcon, MailIcon, ArrowRightIcon } from '../components/icons';
 
 export default function DeliveryPage() {
@@ -10,7 +10,7 @@ export default function DeliveryPage() {
       <PageHero
         title={DELIVERY_PAGE.title}
         lead={DELIVERY_PAGE.headline}
-        image={IMAGES.parcels}
+        image={PHOTOS.studioMove}
         crumb="Delivery Services"
       />
       <section className="pt-section">
@@ -24,7 +24,11 @@ export default function DeliveryPage() {
               </p>
             ))}
 
-            <img src={IMAGES.sofa} alt="Furniture delivered and set in place at home" loading="lazy" />
+            <img
+              src={PHOTOS.wrappedTvs}
+              alt="TVs individually bubble-wrapped by our crew for safe delivery"
+              loading="lazy"
+            />
 
             <h3>{DELIVERY_PAGE.includeTitle}</h3>
             <ul className="check-grid">

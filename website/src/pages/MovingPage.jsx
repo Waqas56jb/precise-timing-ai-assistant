@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import Reveal from '../components/Reveal';
-import { IMAGES, MOVING_PAGE, SITE } from '../data/site';
+import { MOVING_PAGE, PHOTOS, SITE } from '../data/site';
 import { CheckIcon, PhoneIcon, MailIcon, ArrowRightIcon } from '../components/icons';
 
 export default function MovingPage() {
@@ -10,7 +10,7 @@ export default function MovingPage() {
       <PageHero
         title={MOVING_PAGE.title}
         lead={MOVING_PAGE.headline}
-        image={IMAGES.movers}
+        image={PHOTOS.rampTruck}
         crumb="Moving"
       />
       <section className="pt-section">
@@ -24,7 +24,11 @@ export default function MovingPage() {
               </p>
             ))}
 
-            <img src={IMAGES.house} alt="Residential move at a family home" loading="lazy" />
+            <img
+              src={PHOTOS.packedTruck}
+              alt="Our truck packed wall-to-wall with labeled boxes on a real Cincinnati move"
+              loading="lazy"
+            />
 
             <h3>{MOVING_PAGE.offerTitle}</h3>
             <ul className="check-grid">
