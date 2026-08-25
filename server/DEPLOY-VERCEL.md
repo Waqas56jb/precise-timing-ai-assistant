@@ -33,6 +33,11 @@ Copy from `server/.env` into Vercel → Settings → Environment Variables (Prod
 - `QB_REDIRECT_URI` → `https://YOUR-VERCEL-DOMAIN/api/quickbooks/callback`
 - `QB_ENVIRONMENT` → `sandbox` or `production`
 
+**Lead notification emails (required for contact form + chatbot lead emails)**
+- `EMAIL_USER` → `precisetimingtransports@gmail.com`
+- `EMAIL_APP_PASSWORD` → the Gmail App Password (16 chars, no spaces)
+- `EMAIL_NOTIFY_TO` → where notifications land (defaults to `EMAIL_USER`)
+
 **Inbound leads (optional)**
 - `LEAD_INGEST_SECRET` / `YELP_WEBHOOK_SECRET` / `THUMBTACK_WEBHOOK_SECRET`
 
