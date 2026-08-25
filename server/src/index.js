@@ -6,6 +6,9 @@ import { startEmailWorker } from './services/inbound/emailWorker.js';
 
 const app = createApp();
 
+/** True when running as a Vercel serverless function (no long-lived process). */
+const isServerless = Boolean(process.env.VERCEL);
+
 async function bootstrap() {
   const supabase = getSupabase();
   if (supabase) {
@@ -36,4 +39,9 @@ async function bootstrap() {
   });
 }
 
-bootstrap();
+// Vercel imports this file via api/index.js — never call listen() there.
+if (!isServerless) {
+  bootstrap();
+}
+
+export default app;

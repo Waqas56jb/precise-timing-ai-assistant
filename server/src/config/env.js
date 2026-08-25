@@ -3,31 +3,41 @@ import { z } from 'zod';
 
 dotenv.config();
 
+const isVercel = Boolean(process.env.VERCEL);
+
 const schema = z.object({
   PORT: z.coerce.number().default(3001),
-  QB_CLIENT_ID: z.string().min(1, 'QB_CLIENT_ID is required'),
-  QB_CLIENT_SECRET: z.string().min(1, 'QB_CLIENT_SECRET is required'),
+  // Optional so chat/leads can boot on Vercel even before QB is configured
+  QB_CLIENT_ID: z.string().optional().default(''),
+  QB_CLIENT_SECRET: z.string().optional().default(''),
   QB_REDIRECT_URI: z
     .string()
     .url()
     .default('http://localhost:3001/api/quickbooks/callback'),
   QB_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
-  QB_SCOPES: z
-    .string()
-    .default('com.intuit.quickbooks.accounting'),
+  QB_SCOPES: z.string().default('com.intuit.quickbooks.accounting'),
   OPENAI_API_KEY: z.string().optional(),
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_ANON_KEY: z.string().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-  DATABASE_URL: z.string().optional(),
-  DATABASE_POOLER_URL: z.string().optional(),
+  SUPABASE_URL: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().url().optional()
+  ),
+  SUPABASE_ANON_KEY: z.string().optional().default(''),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(''),
+  DATABASE_URL: z.string().optional().default(''),
+  DATABASE_POOLER_URL: z.string().optional().default(''),
 });
 
 const parsed = schema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error('Invalid environment:', parsed.error.flatten().fieldErrors);
-  process.exit(1);
+  // process.exit kills the entire Vercel serverless function before it can respond
+  if (!isVercel) {
+    process.exit(1);
+  }
+  throw new Error(
+    `Invalid environment: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`
+  );
 }
 
 export const env = parsed.data;

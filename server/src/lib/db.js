@@ -14,7 +14,10 @@ export function getPool() {
     pool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
-      max: 5,
+      // Serverless: keep pool tiny — each invocation can open its own connections
+      max: process.env.VERCEL ? 1 : 5,
+      idleTimeoutMillis: process.env.VERCEL ? 1000 : 10000,
+      connectionTimeoutMillis: 10000,
     });
   }
   return pool;
