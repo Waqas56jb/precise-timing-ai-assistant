@@ -1,4 +1,4 @@
-import { getToken, setToken } from './auth.js';
+import { getToken, setSession } from './auth.js';
 
 const API = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -16,7 +16,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) {
-    setToken('');
+    setSession();
     if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
       window.location.href = '/login';
     }
@@ -28,7 +28,8 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
 }
 
 export const api = {
-  login: (password) => request('/api/admin/login', { method: 'POST', body: { password }, auth: false }),
+  login: (email, password) =>
+    request('/api/admin/login', { method: 'POST', body: { email, password }, auth: false }),
   health: () => request('/health', { auth: false }),
   stats: () => request('/api/leads/stats'),
   leads: (params = {}) => {

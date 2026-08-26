@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Truck, Sparkles } from 'lucide-react';
+import { Lock, Mail, Truck, Sparkles } from 'lucide-react';
 import { api } from '../api.js';
-import { setToken } from '../auth.js';
+import { setSession } from '../auth.js';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('admin@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -15,8 +16,8 @@ export default function Login() {
     setBusy(true);
     setError('');
     try {
-      const data = await api.login(password);
-      setToken(data.token);
+      const data = await api.login(email, password);
+      setSession({ token: data.token, email: data.email, name: data.name });
       navigate('/', { replace: true });
     } catch (err) {
       setError(err.message);
@@ -41,7 +42,21 @@ export default function Login() {
         <p className="muted">Sign in to review website, chatbot, Yelp, and Thumbtack leads.</p>
         <form onSubmit={onSubmit}>
           <label>
-            <span>Admin password</span>
+            <span>Email</span>
+            <span className="field">
+              <Mail size={16} />
+              <input
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@gmail.com"
+                required
+              />
+            </span>
+          </label>
+          <label>
+            <span>Password</span>
             <span className="field">
               <Lock size={16} />
               <input
@@ -49,7 +64,7 @@ export default function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter ADMIN_SECRET"
+                placeholder="Enter your password"
                 required
               />
             </span>

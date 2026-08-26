@@ -7,7 +7,7 @@ import {
   LogOut,
   Truck,
 } from 'lucide-react';
-import { setToken } from '../auth.js';
+import { setSession, getAdminEmail } from '../auth.js';
 
 const NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
@@ -19,7 +19,7 @@ const NAV = [
 export default function Layout() {
   const navigate = useNavigate();
   const logout = () => {
-    setToken('');
+    setSession();
     navigate('/login');
   };
 
@@ -45,7 +45,10 @@ export default function Layout() {
         </nav>
         <button type="button" className="navlink navlink--out" onClick={logout}>
           <LogOut size={18} />
-          Sign out
+          <span>
+            Sign out
+            {getAdminEmail() ? <small className="navlink__sub">{getAdminEmail()}</small> : null}
+          </span>
         </button>
       </aside>
       <main className="main">

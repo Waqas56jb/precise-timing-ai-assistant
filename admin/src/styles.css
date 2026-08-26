@@ -76,7 +76,8 @@ button, input { font: inherit; }
   width: 100%;
 }
 .navlink:hover, .navlink.active { background: rgba(255,255,255,0.08); color: var(--white); }
-.navlink--out { margin-top: auto; color: #8aa3bb; }
+.navlink--out { margin-top: auto; color: #8aa3bb; align-items: flex-start; }
+.navlink__sub { display: block; font-size: 0.68rem; font-weight: 600; opacity: 0.75; margin-top: 0.15rem; }
 
 .main { padding: 2rem 2.2rem 3rem; min-width: 0; }
 .page { max-width: 1180px; margin: 0 auto; }

@@ -190,7 +190,7 @@ npm install
 npm run dev                 # http://localhost:5174
 ```
 
-Sign in with `ADMIN_SECRET` from `server/.env` (default local: `PreciseTimingAdmin2026`).
+Sign in with `admin@gmail.com` / `admin@123!` (set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`).
 
 Leads from the **website form**, **chatbot**, **Yelp**, and **Thumbtack** all show here. Use **Email inbox → Sync inbox now** to parse Gmail for Yelp/Thumbtack messages.
 

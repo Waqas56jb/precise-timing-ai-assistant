@@ -3,6 +3,7 @@ import { env } from './config/env.js';
 import { getSupabase } from './lib/supabase.js';
 import { migrateFileTokensToDb } from './services/quickbooks/tokenStore.js';
 import { startEmailWorker } from './services/inbound/emailWorker.js';
+import { seedDefaultAdmin } from './services/adminUsers.js';
 
 const app = createApp();
 
@@ -24,6 +25,13 @@ async function bootstrap() {
     }
   } catch (err) {
     console.warn('QB token migration skipped:', err.message);
+  }
+
+  try {
+    const admin = await seedDefaultAdmin();
+    console.log(`Admin account ready: ${admin.email}`);
+  } catch (err) {
+    console.warn('Admin seed skipped:', err.message);
   }
 
   app.listen(env.PORT, () => {
