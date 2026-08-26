@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { api } from '../api.js';
-import { SOURCES, STATUSES, sourceMeta, formatDate } from '../source.js';
+import { CHANNELS, SOURCES, STATUSES, sourceMeta, formatDate, displayName, isBlocked } from '../source.js';
+import LeadActions from '../components/LeadActions.jsx';
+import ClickRow from '../components/ClickRow.jsx';
 
 export default function Leads() {
+  const { source: routeSource } = useParams();
   const [params, setParams] = useSearchParams();
-  const source = params.get('source') || '';
+  const locked = CHANNELS[routeSource] ? routeSource : '';
+  const source = locked || params.get('source') || '';
   const status = params.get('status') || '';
   const q = params.get('q') || '';
   const [query, setQuery] = useState(q);
   const [data, setData] = useState({ leads: [], total: 0 });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState('');
+
+  const rows = Array.isArray(data?.leads) ? data.leads : [];
+  const channel = CHANNELS[source];
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -21,9 +29,19 @@ export default function Leads() {
     setParams(next);
   };
 
+  const load = () => {
+    setLoading(true);
+    api
+      .leads({ source, status, q, limit: 80 })
+      .then(setData)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError('');
     api
       .leads({ source, status, q, limit: 80 })
       .then((res) => {
@@ -45,13 +63,45 @@ export default function Leads() {
     setFilter('q', query.trim());
   };
 
+  if (routeSource && !CHANNELS[routeSource]) {
+    return <Navigate to="/leads" replace />;
+  }
+
+  const onBlock = async (lead, blocked) => {
+    setBusyId(lead.id);
+    try {
+      await api.updateLead(lead.id, { blocked });
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId('');
+    }
+  };
+
+  const onDelete = async (lead) => {
+    if (!window.confirm(`Delete ${displayName(lead)}? This cannot be undone.`)) return;
+    setBusyId(lead.id);
+    try {
+      await api.deleteLead(lead.id);
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId('');
+    }
+  };
+
   return (
     <div className="page">
       <header className="page__head">
         <div>
-          <p className="kicker">Pipeline</p>
-          <h1>Leads</h1>
-          <p className="muted">{data.total} records · website, chatbot, Yelp, Thumbtack</p>
+          <p className="kicker">{channel?.kicker || 'Pipeline'}</p>
+          <h1>{channel?.title || 'All leads'}</h1>
+          <p className="muted">
+            {data.total} records
+            {channel ? ` · ${channel.blurb}` : ' · website, chatbot, Yelp, Thumbtack'}
+          </p>
         </div>
         <form className="search" onSubmit={onSearch}>
           <Search size={16} />
@@ -63,25 +113,23 @@ export default function Leads() {
         </form>
       </header>
 
-      <div className="filters">
-        <button
-          type="button"
-          className={`chip ${!source ? 'is-on' : ''}`}
-          onClick={() => setFilter('source', '')}
-        >
-          All sources
-        </button>
-        {SOURCES.map((s) => (
+      {!locked ? (
+        <div className="filters">
           <button
-            key={s.id}
             type="button"
-            className={`chip ${source === s.id ? 'is-on' : ''}`}
-            onClick={() => setFilter('source', s.id)}
+            className={`chip ${!source ? 'is-on' : ''}`}
+            onClick={() => setFilter('source', '')}
           >
-            <s.icon size={14} /> {s.label}
+            All sources
           </button>
-        ))}
-      </div>
+          {SOURCES.map((s) => (
+            <Link key={s.id} to={`/channels/${s.id}`} className={`chip ${source === s.id ? 'is-on' : ''}`}>
+              <s.icon size={14} /> {s.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
       <div className="filters">
         <button
           type="button"
@@ -114,30 +162,36 @@ export default function Leads() {
               <th>Phone / Email</th>
               <th>Job</th>
               <th>When</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={7} className="empty">
                   Loading…
                 </td>
               </tr>
-            ) : data.leads.length === 0 ? (
+            ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={7} className="empty">
                   No leads match these filters.
                 </td>
               </tr>
             ) : (
-              data.leads.map((lead) => {
+              rows.map((lead) => {
                 const meta = sourceMeta(lead.source);
                 return (
-                  <tr key={lead.id}>
+                  <ClickRow
+                    key={lead.id}
+                    to={`/leads/${lead.id}`}
+                    className={isBlocked(lead) ? 'is-blocked' : ''}
+                  >
                     <td>
                       <Link to={`/leads/${lead.id}`} className="row-name">
-                        {lead.name || 'Unknown visitor'}
+                        {displayName(lead)}
                       </Link>
+                      {isBlocked(lead) ? <div className="sub">Blocked</div> : null}
                     </td>
                     <td>
                       <span className={`badge tone-${meta.tone}`}>
@@ -153,7 +207,15 @@ export default function Leads() {
                     </td>
                     <td className="clip">{lead.move_size || lead.pickup_address || '—'}</td>
                     <td>{formatDate(lead.created_at)}</td>
-                  </tr>
+                    <td>
+                      <LeadActions
+                        lead={lead}
+                        busy={busyId === lead.id}
+                        onBlock={onBlock}
+                        onDelete={onDelete}
+                      />
+                    </td>
+                  </ClickRow>
                 );
               })
             )}

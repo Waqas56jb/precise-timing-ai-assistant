@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS precise_timing_ai_assistant_business_settings (
   godaddy_booking_url TEXT,
   chatbot_welcome_message TEXT,
   chatbot_system_prompt_extra TEXT,
+  appearance_json JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

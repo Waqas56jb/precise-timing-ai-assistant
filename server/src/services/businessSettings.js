@@ -24,6 +24,7 @@ export const updateBusinessSettingsSchema = z.object({
     .transform((v) => v || null),
   chatbot_welcome_message: z.string().max(2000).nullable().optional(),
   chatbot_system_prompt_extra: z.string().max(8000).nullable().optional(),
+  appearance_json: z.record(z.any()).optional(),
 });
 
 const PUBLIC_FIELDS = [
@@ -33,13 +34,24 @@ const PUBLIC_FIELDS = [
   'timezone',
   'godaddy_booking_url',
   'chatbot_welcome_message',
+  'appearance_json',
 ];
 
 export async function getBusinessSettings() {
   const { rows } = await query(
     `SELECT * FROM ${T.businessSettings} ORDER BY created_at ASC LIMIT 1`
   );
-  return rows[0] || null;
+  const row = rows[0] || null;
+  if (!row) return null;
+  if (typeof row.appearance_json === 'string') {
+    try {
+      row.appearance_json = JSON.parse(row.appearance_json);
+    } catch {
+      row.appearance_json = {};
+    }
+  }
+  row.appearance_json = row.appearance_json || {};
+  return row;
 }
 
 export async function getPublicBusinessSettings() {
@@ -58,8 +70,9 @@ export async function updateBusinessSettings(input) {
     const { rows } = await query(
       `INSERT INTO ${T.businessSettings}
          (business_name, business_phone, business_email, website_url, address,
-          timezone, godaddy_booking_url, chatbot_welcome_message, chatbot_system_prompt_extra)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          timezone, godaddy_booking_url, chatbot_welcome_message,
+          chatbot_system_prompt_extra, appearance_json)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
        RETURNING *`,
       [
         data.business_name ?? 'Precise Timing Transports',
@@ -71,12 +84,17 @@ export async function updateBusinessSettings(input) {
         data.godaddy_booking_url ?? null,
         data.chatbot_welcome_message ?? null,
         data.chatbot_system_prompt_extra ?? null,
+        JSON.stringify(data.appearance_json || {}),
       ]
     );
     return rows[0];
   }
 
   const merged = { ...current, ...data };
+  const appearance =
+    data.appearance_json != null
+      ? { ...(current.appearance_json || {}), ...data.appearance_json }
+      : current.appearance_json;
   const { rows } = await query(
     `UPDATE ${T.businessSettings}
      SET business_name = $1,
@@ -88,8 +106,9 @@ export async function updateBusinessSettings(input) {
          godaddy_booking_url = $7,
          chatbot_welcome_message = $8,
          chatbot_system_prompt_extra = $9,
+         appearance_json = $10::jsonb,
          updated_at = now()
-     WHERE id = $10
+     WHERE id = $11
      RETURNING *`,
     [
       merged.business_name,
@@ -101,6 +120,7 @@ export async function updateBusinessSettings(input) {
       merged.godaddy_booking_url,
       merged.chatbot_welcome_message,
       merged.chatbot_system_prompt_extra,
+      JSON.stringify(appearance || {}),
       current.id,
     ]
   );

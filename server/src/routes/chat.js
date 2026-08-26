@@ -30,8 +30,11 @@ router.get('/welcome', async (_req, res) => {
     res.json({
       welcomeMessage:
         settings?.chatbot_welcome_message ||
+        settings?.appearance_json?.chatbotWelcome ||
         'Hi! How can we help with your move or delivery today?',
       businessName: settings?.business_name || 'Precise Timing Transports',
+      chatbotPrimary: settings?.appearance_json?.chatbotPrimary || '#111111',
+      appearance: settings?.appearance_json || {},
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

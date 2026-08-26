@@ -3,6 +3,7 @@ import Reveal from '../components/Reveal';
 import ContactSection from '../components/ContactSection';
 import { GALLERY, HOME, IMAGES, PHOTOS, PROMO, SITE } from '../data/site';
 import { BLOG_POSTS } from '../data/blog';
+import { useAppearance } from '../lib/appearance';
 import {
   CheckIcon,
   ShieldIcon,
@@ -66,6 +67,12 @@ function Wave({ className }) {
 }
 
 export default function HomePage() {
+  const { appearance } = useAppearance();
+  const heroTitle = appearance.heroTitle || HOME.heroTitle;
+  const heroLead = appearance.heroLead || HOME.heroLead;
+  const ctaLabel = appearance.ctaLabel || HOME.cta;
+  const heroEyebrow = appearance.heroEyebrow;
+
   return (
     <>
       {/* ============ HERO ============ */}
@@ -77,15 +84,21 @@ export default function HomePage() {
 
         <div className="home-hero__content">
           <span className="home-hero__badge">
-            <StarIcon width={14} height={14} /> Moving · Delivery · Junk Removal — Cincinnati, OH
+            <StarIcon width={14} height={14} /> {heroEyebrow || 'Moving · Delivery · Junk Removal — Cincinnati, OH'}
           </span>
           <h1>
-            Small Moves. Delivery. Junk removal. <em>Done Right.</em>
+            {appearance.heroTitle ? (
+              heroTitle
+            ) : (
+              <>
+                Small Moves. Delivery. Junk removal. <em>Done Right.</em>
+              </>
+            )}
           </h1>
-          <p className="home-hero__lead">{HOME.heroLead}</p>
+          <p className="home-hero__lead">{heroLead}</p>
           <div className="home-hero__actions">
             <Link className="pt-btn pt-btn--primary pt-btn--lg" to="/#contact">
-              {HOME.cta}
+              {ctaLabel}
             </Link>
             <Link className="pt-btn pt-btn--ghost pt-btn--lg" to="/services">
               Explore Our Services

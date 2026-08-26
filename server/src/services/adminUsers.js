@@ -41,3 +41,48 @@ export async function verifyAdminPassword(email, password) {
   if (!ok) return null;
   return user;
 }
+
+export async function listAdminUsers() {
+  const { rows } = await query(
+    `SELECT id, email, full_name, role, is_active, created_at, updated_at
+     FROM ${T.adminUsers}
+     ORDER BY created_at ASC`
+  );
+  return rows;
+}
+
+export async function updateAdminUser(id, patch = {}) {
+  const { rows: existing } = await query(
+    `SELECT * FROM ${T.adminUsers} WHERE id = $1`,
+    [id]
+  );
+  const current = existing[0];
+  if (!current) return null;
+
+  let passwordHash = current.password_hash;
+  if (patch.password) {
+    if (String(patch.password).length < 6) {
+      const err = new Error('Password must be at least 6 characters');
+      err.status = 400;
+      throw err;
+    }
+    passwordHash = await bcrypt.hash(String(patch.password), 10);
+  }
+
+  const { rows } = await query(
+    `UPDATE ${T.adminUsers}
+     SET full_name = $1,
+         is_active = $2,
+         password_hash = $3,
+         updated_at = now()
+     WHERE id = $4
+     RETURNING id, email, full_name, role, is_active, created_at, updated_at`,
+    [
+      patch.full_name !== undefined ? patch.full_name : current.full_name,
+      patch.is_active !== undefined ? Boolean(patch.is_active) : current.is_active,
+      passwordHash,
+      id,
+    ]
+  );
+  return rows[0] || null;
+}

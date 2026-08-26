@@ -5,7 +5,9 @@ import {
   countLeads,
   getLeadById,
   getLeadStats,
-  updateLeadStatus,
+  getLeadAnalytics,
+  updateLead,
+  deleteLead,
   getLeadQuotes,
 } from '../services/leads.js';
 import { getMessages } from '../services/conversations.js';
@@ -17,6 +19,14 @@ router.use(requireAdmin);
 router.get('/stats', async (_req, res) => {
   try {
     res.json(await getLeadStats());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/analytics', async (_req, res) => {
+  try {
+    res.json(await getLeadAnalytics());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -55,12 +65,21 @@ router.get('/:id', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
   try {
-    const status = String(req.body?.status || '').trim();
-    const lead = await updateLeadStatus(req.params.id, status);
+    const lead = await updateLead(req.params.id, req.body || {});
     if (!lead) return res.status(404).json({ error: 'Lead not found' });
     res.json(lead);
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const ok = await deleteLead(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Lead not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

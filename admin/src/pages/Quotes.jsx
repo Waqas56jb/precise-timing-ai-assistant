@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { formatDate, formatMoney } from '../source.js';
+import ClickRow from '../components/ClickRow.jsx';
 
 export default function Quotes() {
   const [quotes, setQuotes] = useState([]);
@@ -10,7 +11,7 @@ export default function Quotes() {
   useEffect(() => {
     api
       .quotes()
-      .then(setQuotes)
+      .then((data) => setQuotes(Array.isArray(data) ? data : data.quotes || []))
       .catch((err) => setError(err.message));
   }, []);
 
@@ -44,7 +45,7 @@ export default function Quotes() {
               </tr>
             ) : (
               quotes.map((q) => (
-                <tr key={q.id}>
+                <ClickRow key={q.id} to={q.lead_id ? `/leads/${q.lead_id}` : ''}>
                   <td className="row-name">{q.quote_number || q.id.slice(0, 8)}</td>
                   <td>{formatMoney(q.amount)}</td>
                   <td>
@@ -54,7 +55,7 @@ export default function Quotes() {
                     {q.lead_id ? <Link to={`/leads/${q.lead_id}`}>Open lead</Link> : '—'}
                   </td>
                   <td>{formatDate(q.created_at)}</td>
-                </tr>
+                </ClickRow>
               ))
             )}
           </tbody>

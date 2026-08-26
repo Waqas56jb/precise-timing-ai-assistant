@@ -1,8 +1,13 @@
 import { Router } from 'express';
-import { getAdminSecret, signAdminToken } from '../middleware/adminAuth.js';
+import { getAdminSecret, requireAdmin, signAdminToken } from '../middleware/adminAuth.js';
 import { isMailerConfigured } from '../services/mailer.js';
 import { getImapCredentials, isEmailWorkerConfigured } from '../services/inbound/emailWorker.js';
-import { seedDefaultAdmin, verifyAdminPassword } from '../services/adminUsers.js';
+import {
+  listAdminUsers,
+  seedDefaultAdmin,
+  updateAdminUser,
+  verifyAdminPassword,
+} from '../services/adminUsers.js';
 
 const router = Router();
 
@@ -32,6 +37,27 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/users', requireAdmin, async (_req, res) => {
+  try {
+    res.json(await listAdminUsers());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/users/:id', requireAdmin, async (req, res) => {
+  try {
+    if (req.admin?.sub && String(req.admin.sub) === String(req.params.id) && req.body?.is_active === false) {
+      return res.status(400).json({ error: 'You cannot block your own admin account' });
+    }
+    const user = await updateAdminUser(req.params.id, req.body || {});
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 

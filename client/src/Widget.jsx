@@ -87,7 +87,13 @@ export default function Widget({ api, onClose, isOpen, mode = 'float' }) {
     const stored = api.getConversationId();
     if (stored) setConversationId(stored);
 
-    api.getWelcome().then(setConfig).catch(() => {});
+    api.getWelcome().then((cfg) => {
+      setConfig(cfg);
+      const root = document.querySelector('.pt-widget');
+      if (root && cfg.chatbotPrimary) {
+        root.style.setProperty('--pt-accent', cfg.chatbotPrimary);
+      }
+    }).catch(() => {});
   }, [api]);
 
   React.useEffect(() => {

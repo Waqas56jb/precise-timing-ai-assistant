@@ -113,18 +113,78 @@ export async function getLeadStats() {
   };
 }
 
-export async function updateLeadStatus(id, status) {
-  const allowed = ['new', 'contacted', 'quoted', 'booked', 'closed', 'archived'];
-  if (!allowed.includes(status)) {
-    const err = new Error(`Invalid status. Use: ${allowed.join(', ')}`);
-    err.status = 400;
-    throw err;
+export async function updateLead(id, patch = {}) {
+  const current = await getLeadById(id);
+  if (!current) return null;
+
+  if (patch.status) {
+    const allowed = ['new', 'contacted', 'quoted', 'booked', 'closed', 'archived'];
+    if (!allowed.includes(patch.status)) {
+      const err = new Error(`Invalid status. Use: ${allowed.join(', ')}`);
+      err.status = 400;
+      throw err;
+    }
   }
+
+  const meta = { ...(current.metadata && typeof current.metadata === 'object' ? current.metadata : {}) };
+  if (patch.blocked === true) meta.blocked = true;
+  if (patch.blocked === false) meta.blocked = false;
+
   const { rows } = await query(
-    `UPDATE ${T.leads} SET status = $1, updated_at = now() WHERE id = $2 RETURNING *`,
-    [status, id]
+    `UPDATE ${T.leads}
+     SET name = $1,
+         phone = $2,
+         email = $3,
+         pickup_address = $4,
+         dropoff_address = $5,
+         move_date = $6,
+         move_size = $7,
+         notes = $8,
+         status = $9,
+         metadata = $10::jsonb,
+         updated_at = now()
+     WHERE id = $11
+     RETURNING *`,
+    [
+      patch.name !== undefined ? patch.name : current.name,
+      patch.phone !== undefined ? patch.phone : current.phone,
+      patch.email !== undefined ? patch.email : current.email,
+      patch.pickup_address !== undefined ? patch.pickup_address : current.pickup_address,
+      patch.dropoff_address !== undefined ? patch.dropoff_address : current.dropoff_address,
+      patch.move_date !== undefined ? patch.move_date : current.move_date,
+      patch.move_size !== undefined ? patch.move_size : current.move_size,
+      patch.notes !== undefined ? patch.notes : current.notes,
+      patch.status !== undefined ? patch.status : current.status,
+      JSON.stringify(meta),
+      id,
+    ]
   );
   return rows[0] || null;
+}
+
+export async function deleteLead(id) {
+  const { rowCount } = await query(`DELETE FROM ${T.leads} WHERE id = $1`, [id]);
+  return rowCount > 0;
+}
+
+export async function getLeadAnalytics() {
+  const [daily, quoted, booked] = await Promise.all([
+    query(
+      `SELECT to_char(created_at AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') AS day,
+              COUNT(*)::int AS count
+       FROM ${T.leads}
+       WHERE created_at >= now() - interval '14 days'
+       GROUP BY 1
+       ORDER BY 1`
+    ),
+    query(`SELECT COUNT(*)::int AS n FROM ${T.quotes}`),
+    query(`SELECT COUNT(*)::int AS n FROM ${T.leads} WHERE status = 'booked'`),
+  ]);
+  return {
+    daily: daily.rows,
+    quotes: quoted.rows[0]?.n || 0,
+    booked: booked.rows[0]?.n || 0,
+  };
 }
 
 export async function getLeadQuotes(leadId) {

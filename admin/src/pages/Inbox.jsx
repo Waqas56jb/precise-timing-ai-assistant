@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Inbox as InboxIcon, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { api } from '../api.js';
 
@@ -79,7 +80,15 @@ export default function Inbox() {
             <ul className="sync-list">
               {result.leads.map((l) => (
                 <li key={l.id}>
-                  {l.source} · {l.name || 'Unnamed'} {l.created ? '(new)' : '(updated)'}
+                  {l.id ? (
+                    <Link to={`/leads/${l.id}`}>
+                      {l.source} · {l.name || 'Unnamed'} {l.created ? '(new)' : '(updated)'}
+                    </Link>
+                  ) : (
+                    <>
+                      {l.source} · {l.name || 'Unnamed'} {l.created ? '(new)' : '(updated)'}
+                    </>
+                  )}
                 </li>
               ))}
             </ul>

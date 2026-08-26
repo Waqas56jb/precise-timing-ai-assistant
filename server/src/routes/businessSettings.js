@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ZodError } from 'zod';
+import { requireAdmin } from '../middleware/adminAuth.js';
 import {
   getBusinessSettings,
   getPublicBusinessSettings,
@@ -7,18 +8,6 @@ import {
 } from '../services/businessSettings.js';
 
 const router = Router();
-
-router.get('/', async (_req, res) => {
-  try {
-    const settings = await getBusinessSettings();
-    if (!settings) {
-      return res.status(404).json({ error: 'Business settings not found' });
-    }
-    res.json(settings);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 router.get('/public', async (_req, res) => {
   try {
@@ -32,7 +21,19 @@ router.get('/public', async (_req, res) => {
   }
 });
 
-router.put('/', async (req, res) => {
+router.get('/', requireAdmin, async (_req, res) => {
+  try {
+    const settings = await getBusinessSettings();
+    if (!settings) {
+      return res.status(404).json({ error: 'Business settings not found' });
+    }
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/', requireAdmin, async (req, res) => {
   try {
     const settings = await updateBusinessSettings(req.body);
     res.json(settings);

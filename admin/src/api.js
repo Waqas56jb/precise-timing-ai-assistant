@@ -32,6 +32,7 @@ export const api = {
     request('/api/admin/login', { method: 'POST', body: { email, password }, auth: false }),
   health: () => request('/health', { auth: false }),
   stats: () => request('/api/leads/stats'),
+  analytics: () => request('/api/leads/analytics'),
   leads: (params = {}) => {
     const q = new URLSearchParams();
     Object.entries(params).forEach(([k, v]) => {
@@ -40,8 +41,17 @@ export const api = {
     return request(`/api/leads?${q}`);
   },
   lead: (id) => request(`/api/leads/${id}`),
-  updateLead: (id, status) => request(`/api/leads/${id}`, { method: 'PATCH', body: { status } }),
+  updateLead: (id, patch) =>
+    request(`/api/leads/${id}`, {
+      method: 'PATCH',
+      body: typeof patch === 'string' ? { status: patch } : patch,
+    }),
+  deleteLead: (id) => request(`/api/leads/${id}`, { method: 'DELETE' }),
   quotes: () => request('/api/quotes?limit=100'),
   inboxStatus: () => request('/api/inbound-email/status', { auth: false }),
   pollInbox: () => request('/api/inbound-email/poll', { method: 'POST' }),
+  settings: () => request('/api/business-settings'),
+  saveSettings: (body) => request('/api/business-settings', { method: 'PUT', body }),
+  adminUsers: () => request('/api/admin/users'),
+  updateAdminUser: (id, body) => request(`/api/admin/users/${id}`, { method: 'PATCH', body }),
 };
