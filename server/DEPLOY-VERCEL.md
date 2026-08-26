@@ -33,15 +33,22 @@ Copy from `server/.env` into Vercel → Settings → Environment Variables (Prod
 - `QB_REDIRECT_URI` → `https://YOUR-VERCEL-DOMAIN/api/quickbooks/callback`
 - `QB_ENVIRONMENT` → `sandbox` or `production`
 
-**Lead notification emails (required for contact form + chatbot lead emails)**
+**Admin dashboard**
+- `ADMIN_SECRET` → password used to sign in to `admin/`
+- `CRON_SECRET` → same value as `ADMIN_SECRET` so Vercel Cron can poll Gmail daily
+
+**Lead notification emails (required for contact form, chatbot, Yelp, Thumbtack)**
 - `EMAIL_USER` → `precisetimingtransports@gmail.com`
 - `EMAIL_APP_PASSWORD` → the Gmail App Password (16 chars, no spaces)
 - `EMAIL_NOTIFY_TO` → where notifications land (defaults to `EMAIL_USER`)
 
-**Inbound leads (optional)**
-- `LEAD_INGEST_SECRET` / `YELP_WEBHOOK_SECRET` / `THUMBTACK_WEBHOOK_SECRET`
+**Gmail IMAP parser (Yelp + Thumbtack emails)**
+- Uses `EMAIL_USER` / `EMAIL_APP_PASSWORD` when `IMAP_*` is unset
+- Optional: `IMAP_USER`, `IMAP_PASSWORD`, `IMAP_HOST=imap.gmail.com`
+- Do **not** set `EMAIL_WORKER_ENABLED=true` on Vercel (no long-lived process). Use Admin **Sync inbox** or the daily cron at `/api/inbound-email/poll`.
 
-Do **not** set `EMAIL_WORKER_ENABLED=true` on Vercel — IMAP polling needs a always-on host (VPS), not serverless.
+**Inbound webhooks (optional)**
+- `LEAD_INGEST_SECRET` / `YELP_WEBHOOK_SECRET` / `THUMBTACK_WEBHOOK_SECRET`
 
 ## 3. Redeploy
 

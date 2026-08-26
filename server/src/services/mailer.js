@@ -266,3 +266,48 @@ export async function sendChatbotLeadEmail({ lead, transcript, isUpdate }) {
     replyTo: lead.email || undefined,
   });
 }
+
+const SOURCE_LABELS = {
+  yelp: 'Yelp',
+  thumbtack: 'Thumbtack',
+  website_form: 'Website quote form',
+  website: 'Chatbot',
+  chatbot: 'Chatbot',
+};
+
+/** Yelp / Thumbtack (and any other inbound) lead notification. */
+export async function sendInboundLeadEmail({ lead, isUpdate }) {
+  const source = String(lead.source || 'inbound').toLowerCase();
+  const label = SOURCE_LABELS[source] || source;
+  const meta = lead.metadata || {};
+  const rowsData = [
+    ['Source', label],
+    ['Name', lead.name],
+    ['Phone', lead.phone],
+    ['Email', lead.email],
+    ['Pickup address', lead.pickup_address],
+    ['Drop-off address', lead.dropoff_address],
+    ['Move date', lead.move_date],
+    ['Move size / service', lead.move_size],
+    ['Notes', lead.notes],
+    ['External ID', meta.external_id],
+    ['Email subject', meta.subject],
+    ['Lead ID', lead.id],
+  ];
+
+  const html = buildLeadEmailHtml({
+    badge: isUpdate ? `${label} lead — updated` : `New ${label} lead`,
+    heading: isUpdate ? `${label} Lead Updated` : `New Lead from ${label}`,
+    rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
+    contact: { email: lead.email, phone: lead.phone },
+    footNote: `Captured from ${label} and saved to the Precise Timing admin inbox.`,
+  });
+
+  const who = lead.name || lead.phone || lead.email || 'New customer';
+  return send({
+    subject: `${isUpdate ? 'Updated' : 'New'} ${label} Lead — ${who}`,
+    html,
+    text: buildPlainText(rowsData),
+    replyTo: lead.email || undefined,
+  });
+}

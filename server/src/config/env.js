@@ -28,6 +28,12 @@ const schema = z.object({
   EMAIL_USER: z.string().optional().default(''),
   EMAIL_APP_PASSWORD: z.string().optional().default(''),
   EMAIL_NOTIFY_TO: z.string().optional().default(''),
+  ADMIN_SECRET: z.string().optional().default(''),
+  IMAP_HOST: z.string().optional().default('imap.gmail.com'),
+  IMAP_PORT: z.coerce.number().default(993),
+  IMAP_USER: z.string().optional().default(''),
+  IMAP_PASSWORD: z.string().optional().default(''),
+  IMAP_MAILBOX: z.string().optional().default('INBOX'),
 });
 
 const parsed = schema.safeParse(process.env);

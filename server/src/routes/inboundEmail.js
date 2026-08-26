@@ -1,31 +1,34 @@
 import { Router } from 'express';
+import { requireAdminOrCron } from '../middleware/adminAuth.js';
 import {
   isEmailWorkerConfigured,
+  getImapCredentials,
   pollLeadEmails,
 } from '../services/inbound/emailWorker.js';
 
 const router = Router();
 
 router.get('/status', (_req, res) => {
+  const creds = getImapCredentials();
   res.json({
     ok: true,
     configured: isEmailWorkerConfigured(),
     enabled: ['1', 'true', 'yes', 'on'].includes(
       String(process.env.EMAIL_WORKER_ENABLED || '').toLowerCase()
     ),
-    host: process.env.IMAP_HOST || null,
-    user: process.env.IMAP_USER || null,
+    host: creds.host || null,
+    user: creds.user || null,
     intervalMs: Number(process.env.EMAIL_WORKER_INTERVAL_MS || 60000),
-    note: 'Polls IMAP for Yelp/Thumbtack lead emails and saves to leads table.',
+    note: 'Polls Gmail IMAP for Yelp + Thumbtack lead emails and saves to leads. Uses EMAIL_USER / EMAIL_APP_PASSWORD when IMAP_* is unset.',
   });
 });
 
-/** Manual trigger: poll once now */
-router.post('/poll', async (_req, res) => {
+async function runPoll(req, res) {
   try {
     if (!isEmailWorkerConfigured()) {
       return res.status(503).json({
-        error: 'IMAP not configured. Set IMAP_HOST, IMAP_USER, IMAP_PASSWORD in .env',
+        error:
+          'IMAP not configured. Set EMAIL_USER + EMAIL_APP_PASSWORD (Gmail app password) on the server.',
       });
     }
     const result = await pollLeadEmails({
@@ -37,6 +40,10 @@ router.post('/poll', async (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+}
+
+router.post('/poll', requireAdminOrCron, runPoll);
+/** Vercel Cron hits GET with Authorization: Bearer CRON_SECRET */
+router.get('/poll', requireAdminOrCron, runPoll);
 
 export default router;

@@ -9,7 +9,10 @@ import contactRouter from './routes/contact.js';
 import thumbtackRouter from './routes/thumbtack.js';
 import yelpRouter from './routes/yelp.js';
 import inboundEmailRouter from './routes/inboundEmail.js';
+import adminRouter from './routes/admin.js';
 import { isMailerConfigured } from './services/mailer.js';
+import { isEmailWorkerConfigured } from './services/inbound/emailWorker.js';
+import { getAdminSecret } from './middleware/adminAuth.js';
 
 export function createApp() {
   const app = express();
@@ -28,6 +31,8 @@ export function createApp() {
       ok: true,
       service: 'precise-timing-server',
       emailConfigured: isMailerConfigured(),
+      imapConfigured: isEmailWorkerConfigured(),
+      adminConfigured: Boolean(getAdminSecret()),
     });
   });
 
@@ -39,6 +44,7 @@ export function createApp() {
   app.use('/api/contact', contactRouter);
   app.use('/api/thumbtack', thumbtackRouter);
   app.use('/api/yelp', yelpRouter);
+  app.use('/api/admin', adminRouter);
   app.use('/api/inbound-email', inboundEmailRouter);
 
   app.use((err, _req, res, _next) => {

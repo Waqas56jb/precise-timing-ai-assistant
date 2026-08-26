@@ -1,4 +1,30 @@
-import { upsertExternalLead } from '../leads.js';
+import { upsertExternalLead, markLeadNotified } from '../leads.js';
+import { isMailerConfigured, sendInboundLeadEmail } from '../mailer.js';
+
+function leadFingerprint(lead) {
+  return JSON.stringify([
+    lead.name,
+    lead.phone,
+    lead.email,
+    lead.pickup_address,
+    lead.dropoff_address,
+    lead.move_date,
+    lead.move_size,
+    lead.notes,
+  ]);
+}
+
+async function notifyInboundLead(lead, created) {
+  if (!lead || !isMailerConfigured()) return;
+  const fingerprint = leadFingerprint(lead);
+  if (lead.metadata?.notify_fingerprint === fingerprint) return;
+  try {
+    await sendInboundLeadEmail({ lead, isUpdate: !created });
+    await markLeadNotified(lead.id, fingerprint);
+  } catch (err) {
+    console.warn('Inbound lead email failed:', err.message);
+  }
+}
 
 /**
  * Persist a normalized external lead (from Thumbtack / Yelp parsers).
@@ -24,7 +50,7 @@ export async function ingestNormalizedLead(source, normalized) {
     throw err;
   }
 
-  return upsertExternalLead({
+  const result = await upsertExternalLead({
     source,
     externalId: normalized.externalId,
     name: normalized.name,
@@ -37,4 +63,7 @@ export async function ingestNormalizedLead(source, normalized) {
     notes: normalized.notes,
     metadata: normalized.metadata || {},
   });
+
+  await notifyInboundLead(result.lead, result.created);
+  return result;
 }

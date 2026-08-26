@@ -1,0 +1,25 @@
+# Precise Timing Admin
+
+Dashboard for website, chatbot, Yelp, and Thumbtack leads.
+
+## Local
+
+```bash
+cd admin
+npm install
+npm run dev
+```
+
+Opens at http://localhost:5174 and proxies `/api` to the server on port 3001.
+
+Sign in with `ADMIN_SECRET` from `server/.env`.
+
+## Vercel
+
+| Setting | Value |
+|--------|--------|
+| Root Directory | `admin` |
+| Framework | Vite |
+| Env | `VITE_API_URL=https://precise-timing-ai-assistant-server.vercel.app` |
+
+Also set `ADMIN_SECRET` on the **server** project (same value you type at login).

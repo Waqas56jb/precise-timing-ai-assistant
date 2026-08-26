@@ -26,7 +26,7 @@
 |:------|:-----|:------:|
 | 🎨 **client/** | Embeddable React chat widget (center preview + float launcher) | ✅ Live |
 | ⚙️ **server/** | Express API, OpenAI chat, leads, quotes, QuickBooks OAuth | ✅ Live |
-| 🗂️ **admin/** | Dashboard for leads, quotes & business settings | 🚧 Planned |
+| 🗂️ **admin/** | Dashboard for website, chatbot, Yelp & Thumbtack leads | ✅ Live |
 
 ---
 
@@ -103,7 +103,7 @@
 
 ```text
 precise-timing-ai-assistant/
-├── 📁 admin/                 # Admin dashboard (coming soon)
+├── 📁 admin/                 # React admin (leads, quotes, Gmail inbox sync)
 ├── 📁 client/                # React + Vite chat widget
 │   ├── src/                  # Widget, API client, markdown, styles
 │   ├── dist/embed.js         # Production embed bundle
@@ -182,7 +182,19 @@ npm run dev                 # http://localhost:3001
 
 Health check: [http://localhost:3001/health](http://localhost:3001/health)
 
-### 2️⃣ Client (widget preview)
+### 2️⃣ Admin dashboard
+
+```bash
+cd admin
+npm install
+npm run dev                 # http://localhost:5174
+```
+
+Sign in with `ADMIN_SECRET` from `server/.env` (default local: `PreciseTimingAdmin2026`).
+
+Leads from the **website form**, **chatbot**, **Yelp**, and **Thumbtack** all show here. Use **Email inbox → Sync inbox now** to parse Gmail for Yelp/Thumbtack messages.
+
+### 3️⃣ Client (widget preview)
 
 ```bash
 cd client
@@ -192,7 +204,7 @@ npm run dev                 # http://localhost:5173
 
 Dev preview uses **`data-mode="center"`** and talks to `http://127.0.0.1:3001`.
 
-### 3️⃣ QuickBooks (optional)
+### 4️⃣ QuickBooks (optional)
 
 1. Create an Intuit app → add redirect URI:  
    `http://localhost:3001/api/quickbooks/callback`
@@ -214,14 +226,17 @@ Base URL (local): `http://127.0.0.1:3001`
 
 | Method | Endpoint | Description |
 |:------:|:---------|:------------|
-| `GET` | `/health` | Liveness |
+| `GET` | `/health` | Liveness + email/imap/admin flags |
 | `GET` | `/api/chat/welcome` | Welcome copy + business name |
 | `POST` | `/api/chat/message` | Send message → GPT reply |
-| `GET` | `/api/chat/conversations/:id` | Conversation + messages |
-| `GET` | `/api/leads` | List leads |
-| `GET` | `/api/leads/:id` | Lead detail |
-| `GET` | `/api/quotes` | List quotes |
-| `GET` | `/api/quotes/:id` | Quote detail |
+| `POST` | `/api/contact` | Website quote form (multipart + files) |
+| `POST` | `/api/admin/login` | Admin login → `{ token }` |
+| `GET` | `/api/leads` | List leads **(admin)** |
+| `GET` | `/api/leads/stats` | Counts by source **(admin)** |
+| `GET` | `/api/leads/:id` | Lead + chat transcript **(admin)** |
+| `PATCH` | `/api/leads/:id` | Update status **(admin)** |
+| `GET` | `/api/quotes` | List quotes **(admin)** |
+| `POST` | `/api/inbound-email/poll` | Parse Gmail for Yelp/Thumbtack **(admin)** |
 | `GET` | `/api/business-settings` | Full settings |
 | `GET` | `/api/business-settings/public` | Public settings |
 | `PUT` | `/api/business-settings` | Update settings |

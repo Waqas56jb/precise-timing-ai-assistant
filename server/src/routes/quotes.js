@@ -2,8 +2,11 @@ import { Router } from 'express';
 import { listQuotes } from '../services/quotes.js';
 import { query } from '../lib/db.js';
 import { T } from '../db/tables.js';
+import { requireAdmin } from '../middleware/adminAuth.js';
 
 const router = Router();
+
+router.use(requireAdmin);
 
 router.get('/', async (req, res) => {
   try {

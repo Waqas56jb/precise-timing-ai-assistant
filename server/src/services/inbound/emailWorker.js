@@ -1,5 +1,6 @@
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
+import { env } from '../../config/env.js';
 import { detectLeadEmailSource } from './detectSource.js';
 import { parseYelpLead } from '../yelp/parseLead.js';
 import { parseThumbtackLead } from '../thumbtack/parseLead.js';
@@ -11,23 +12,28 @@ function envBool(name, fallback = false) {
   return ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase());
 }
 
+/** Gmail IMAP — falls back to EMAIL_USER / EMAIL_APP_PASSWORD (SMTP app password). */
+export function getImapCredentials() {
+  const user = process.env.IMAP_USER || env.EMAIL_USER || '';
+  const pass = process.env.IMAP_PASSWORD || env.EMAIL_APP_PASSWORD || '';
+  const host = process.env.IMAP_HOST || env.IMAP_HOST || 'imap.gmail.com';
+  const port = Number(process.env.IMAP_PORT || env.IMAP_PORT || 993);
+  return { user, pass, host, port };
+}
+
 export function isEmailWorkerConfigured() {
-  return Boolean(
-    process.env.IMAP_HOST &&
-      process.env.IMAP_USER &&
-      process.env.IMAP_PASSWORD
-  );
+  const { user, pass, host } = getImapCredentials();
+  return Boolean(host && user && pass);
 }
 
 function createClient() {
-  const host = process.env.IMAP_HOST;
-  const user = process.env.IMAP_USER;
-  const pass = process.env.IMAP_PASSWORD;
-  const port = Number(process.env.IMAP_PORT || 993);
+  const { host, user, pass, port } = getImapCredentials();
   const secure = envBool('IMAP_SECURE', port === 993);
 
   if (!host || !user || !pass) {
-    const err = new Error('IMAP_HOST, IMAP_USER, IMAP_PASSWORD are required');
+    const err = new Error(
+      'IMAP not configured. Set EMAIL_USER + EMAIL_APP_PASSWORD (or IMAP_USER + IMAP_PASSWORD).'
+    );
     err.status = 503;
     throw err;
   }
@@ -103,7 +109,7 @@ export async function pollLeadEmails({
     return { skipped: true, reason: 'IMAP not configured' };
   }
 
-  const mailbox = process.env.IMAP_MAILBOX || 'INBOX';
+  const mailbox = process.env.IMAP_MAILBOX || env.IMAP_MAILBOX || 'INBOX';
   const client = createClient();
   const results = {
     scanned: 0,

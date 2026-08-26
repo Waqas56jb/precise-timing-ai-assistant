@@ -14,7 +14,13 @@ export async function getLeadById(id) {
   return rows[0] || null;
 }
 
-export async function listLeads({ limit = 50, status = null, source = null } = {}) {
+export async function listLeads({
+  limit = 50,
+  offset = 0,
+  status = null,
+  source = null,
+  q = null,
+} = {}) {
   const clauses = [];
   const params = [];
 
@@ -23,16 +29,109 @@ export async function listLeads({ limit = 50, status = null, source = null } = {
     clauses.push(`status = $${params.length}`);
   }
   if (source) {
-    params.push(source);
-    clauses.push(`source = $${params.length}`);
+    if (source === 'chatbot') {
+      params.push('chatbot', 'website');
+      clauses.push(`source IN ($${params.length - 1}, $${params.length})`);
+    } else {
+      params.push(source);
+      clauses.push(`source = $${params.length}`);
+    }
+  }
+  if (q && String(q).trim()) {
+    params.push(`%${String(q).trim()}%`);
+    const i = params.length;
+    clauses.push(
+      `(COALESCE(name,'') ILIKE $${i} OR COALESCE(email,'') ILIKE $${i} OR COALESCE(phone,'') ILIKE $${i} OR COALESCE(notes,'') ILIKE $${i} OR COALESCE(pickup_address,'') ILIKE $${i})`
+    );
   }
 
   let sql = `SELECT * FROM ${T.leads}`;
   if (clauses.length) sql += ` WHERE ${clauses.join(' AND ')}`;
-  sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
-  params.push(limit);
+  sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+  params.push(Math.min(Number(limit) || 50, 200), Number(offset) || 0);
 
   const { rows } = await query(sql, params);
+  return rows;
+}
+
+export async function countLeads({ status = null, source = null, q = null } = {}) {
+  const clauses = [];
+  const params = [];
+  if (status) {
+    params.push(status);
+    clauses.push(`status = $${params.length}`);
+  }
+  if (source) {
+    if (source === 'chatbot') {
+      params.push('chatbot', 'website');
+      clauses.push(`source IN ($${params.length - 1}, $${params.length})`);
+    } else {
+      params.push(source);
+      clauses.push(`source = $${params.length}`);
+    }
+  }
+  if (q && String(q).trim()) {
+    params.push(`%${String(q).trim()}%`);
+    const i = params.length;
+    clauses.push(
+      `(COALESCE(name,'') ILIKE $${i} OR COALESCE(email,'') ILIKE $${i} OR COALESCE(phone,'') ILIKE $${i} OR COALESCE(notes,'') ILIKE $${i})`
+    );
+  }
+  let sql = `SELECT COUNT(*)::int AS n FROM ${T.leads}`;
+  if (clauses.length) sql += ` WHERE ${clauses.join(' AND ')}`;
+  const { rows } = await query(sql, params);
+  return rows[0]?.n || 0;
+}
+
+export async function getLeadStats() {
+  const [bySource, byStatus, recent] = await Promise.all([
+    query(
+      `SELECT COALESCE(source, 'unknown') AS source, COUNT(*)::int AS count
+       FROM ${T.leads} GROUP BY 1 ORDER BY count DESC`
+    ),
+    query(
+      `SELECT COALESCE(status, 'new') AS status, COUNT(*)::int AS count
+       FROM ${T.leads} GROUP BY 1 ORDER BY count DESC`
+    ),
+    query(
+      `SELECT COUNT(*)::int AS n FROM ${T.leads}
+       WHERE created_at >= now() - interval '7 days'`
+    ),
+  ]);
+
+  const sources = Object.fromEntries(bySource.rows.map((r) => [r.source, r.count]));
+  const chatbot = (sources.chatbot || 0) + (sources.website || 0);
+
+  return {
+    total: bySource.rows.reduce((s, r) => s + r.count, 0),
+    last7Days: recent.rows[0]?.n || 0,
+    bySource: {
+      ...sources,
+      chatbot,
+    },
+    byStatus: Object.fromEntries(byStatus.rows.map((r) => [r.status, r.count])),
+  };
+}
+
+export async function updateLeadStatus(id, status) {
+  const allowed = ['new', 'contacted', 'quoted', 'booked', 'closed', 'archived'];
+  if (!allowed.includes(status)) {
+    const err = new Error(`Invalid status. Use: ${allowed.join(', ')}`);
+    err.status = 400;
+    throw err;
+  }
+  const { rows } = await query(
+    `UPDATE ${T.leads} SET status = $1, updated_at = now() WHERE id = $2 RETURNING *`,
+    [status, id]
+  );
+  return rows[0] || null;
+}
+
+export async function getLeadQuotes(leadId) {
+  const { rows } = await query(
+    `SELECT * FROM ${T.quotes} WHERE lead_id = $1 ORDER BY created_at DESC`,
+    [leadId]
+  );
   return rows;
 }
 
@@ -148,7 +247,7 @@ export async function markLeadNotified(leadId, fingerprint) {
 export async function upsertLeadFromExtraction({
   conversationId,
   extracted,
-  source = 'website',
+  source = 'chatbot',
 }) {
   const existing = await getLeadByConversationId(conversationId);
 
