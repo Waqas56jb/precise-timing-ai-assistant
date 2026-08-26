@@ -16,7 +16,8 @@
     "lead:test": "node scripts/lead-test.js",
     "lead:ingest-test": "node scripts/lead-ingest-test.js",
     "email:worker": "node scripts/email-worker.js",
-    "email:watch": "node scripts/email-worker.js --watch"
+    "email:watch": "node scripts/email-worker.js --watch",
+    "db:seed-admin": "node scripts/seed-admin.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

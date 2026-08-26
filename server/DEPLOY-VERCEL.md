@@ -34,7 +34,8 @@ Copy from `server/.env` into Vercel → Settings → Environment Variables (Prod
 - `QB_ENVIRONMENT` → `sandbox` or `production`
 
 **Admin dashboard**
-- `ADMIN_SECRET` → password used to sign in to `admin/`
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` → login for `admin/` (e.g. `admin@gmail.com` / `admin@123!`)
+- `ADMIN_SECRET` → used to sign session tokens (keep this set)
 - `CRON_SECRET` → same value as `ADMIN_SECRET` so Vercel Cron can poll Gmail daily
 
 **Lead notification emails (required for contact form, chatbot, Yelp, Thumbtack)**
