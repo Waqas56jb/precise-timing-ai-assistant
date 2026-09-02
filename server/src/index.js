@@ -18,6 +18,16 @@ process.on('uncaughtException', (err) => {
 });
 
 async function bootstrap() {
+  const host = process.env.HOST || '0.0.0.0';
+  await new Promise((resolve, reject) => {
+    const server = app.listen(env.PORT, host, resolve);
+    server.on('error', reject);
+  });
+  console.log(`Server listening on http://${host}:${env.PORT}`);
+  console.log(`Health: http://${host}:${env.PORT}/health`);
+  console.log(`Chat API: http://${host}:${env.PORT}/api/chat/message`);
+  console.log(`Yelp/Thumbtack: http://${host}:${env.PORT}/api/yelp/status`);
+
   const supabase = getSupabase();
   if (supabase) {
     console.log('Supabase client ready (service_role)');
@@ -41,29 +51,16 @@ async function bootstrap() {
     console.warn('Admin seed skipped:', err.message);
   }
 
-  const host = process.env.HOST || '0.0.0.0';
-  const server = app.listen(env.PORT, host, () => {
-    console.log(`Server listening on http://${host}:${env.PORT}`);
-    console.log(`Health: http://${host}:${env.PORT}/health`);
-    console.log(`Chat API: http://${host}:${env.PORT}/api/chat/message`);
-    console.log(`Yelp/Thumbtack: http://${host}:${env.PORT}/api/yelp/status`);
-
-    try {
-      const worker = startEmailWorker();
-      if (worker.started) {
-        console.log(`[email-worker] started (${worker.intervalMs || ''}ms)`);
-      } else if (worker.reason !== 'EMAIL_WORKER_ENABLED is not true') {
-        console.log(`[email-worker] not started: ${worker.reason}`);
-      }
-    } catch (err) {
-      console.warn('[email-worker] failed to start:', err.message);
+  try {
+    const worker = startEmailWorker();
+    if (worker.started) {
+      console.log(`[email-worker] started (${worker.intervalMs || ''}ms)`);
+    } else if (worker.reason !== 'EMAIL_WORKER_ENABLED is not true') {
+      console.log(`[email-worker] not started: ${worker.reason}`);
     }
-  });
-
-  server.on('error', (err) => {
-    console.error('HTTP server error:', err.message);
-    process.exit(1);
-  });
+  } catch (err) {
+    console.warn('[email-worker] failed to start:', err.message);
+  }
 }
 
 // Vercel imports this file via api/index.js — never call listen() there.
