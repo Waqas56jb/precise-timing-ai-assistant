@@ -113,15 +113,15 @@ export default function Customers() {
             <tbody>
               {admins.map((user) => (
                 <tr key={user.id}>
-                  <td className="row-name">{user.full_name || 'Admin'}</td>
-                  <td>{user.email}</td>
-                  <td className="sub">{user.role}</td>
-                  <td>
+                  <td className="row-name" data-label="Name">{user.full_name || 'Admin'}</td>
+                  <td data-label="Email">{user.email}</td>
+                  <td className="sub" data-label="Role">{user.role}</td>
+                  <td data-label="Status">
                     <span className={`status ${user.is_active ? 'status--booked' : 'status--archived'}`}>
                       {user.is_active ? 'Active' : 'Blocked'}
                     </span>
                   </td>
-                  <td>
+                  <td className="actions">
                     <button
                       type="button"
                       className="btn btn--ghost btn--sm"
@@ -171,23 +171,23 @@ export default function Customers() {
                     to={`/leads/${lead.id}`}
                     className={isBlocked(lead) ? 'is-blocked' : ''}
                   >
-                    <td>
+                    <td data-label="Customer">
                       <Link to={`/leads/${lead.id}`} className="row-name">
                         {displayName(lead)}
                       </Link>
                       {isBlocked(lead) ? <div className="sub">Blocked</div> : null}
                     </td>
-                    <td>
+                    <td data-label="Source">
                       <span className={`badge tone-${meta.tone}`}>
                         <meta.icon size={12} /> {meta.label}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Contact">
                       <div>{lead.phone || '—'}</div>
                       <div className="sub">{lead.email || ''}</div>
                     </td>
-                    <td>{formatDate(lead.created_at)}</td>
-                    <td>
+                    <td data-label="Joined">{formatDate(lead.created_at)}</td>
+                    <td className="actions" data-label="Actions">
                       <LeadActions
                         lead={lead}
                         busy={busyId === lead.id}

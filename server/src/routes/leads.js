@@ -11,6 +11,7 @@ import {
   getLeadQuotes,
 } from '../services/leads.js';
 import { getMessages } from '../services/conversations.js';
+import { replyToMarketplaceMessage, isMarketplaceAiChannel } from '../services/chat.js';
 
 const router = Router();
 
@@ -80,6 +81,40 @@ router.delete('/:id', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/:id/ai-reply', async (req, res) => {
+  try {
+    const lead = await getLeadById(req.params.id);
+    if (!lead) return res.status(404).json({ error: 'Lead not found' });
+    if (!isMarketplaceAiChannel(lead.source)) {
+      return res.status(400).json({
+        error: 'AI replies are only generated for Yelp leads. Paste the draft into Yelp — this system cannot send there.',
+      });
+    }
+
+    const result = await replyToMarketplaceMessage({
+      lead,
+      channel: lead.source,
+      force: Boolean(req.body?.force),
+    });
+    const updated = await getLeadById(lead.id);
+    const [messages, quotes] = await Promise.all([
+      result.conversationId || updated?.conversation_id
+        ? getMessages(result.conversationId || updated.conversation_id, 200)
+        : [],
+      getLeadQuotes(lead.id),
+    ]);
+    res.json({
+      ...updated,
+      messages,
+      quotes,
+      aiReply: result.reply,
+      skipped: result.skipped,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 

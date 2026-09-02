@@ -46,15 +46,15 @@ export default function Quotes() {
             ) : (
               quotes.map((q) => (
                 <ClickRow key={q.id} to={q.lead_id ? `/leads/${q.lead_id}` : ''}>
-                  <td className="row-name">{q.quote_number || q.id.slice(0, 8)}</td>
-                  <td>{formatMoney(q.amount)}</td>
-                  <td>
+                  <td className="row-name" data-label="Number">{q.quote_number || q.id.slice(0, 8)}</td>
+                  <td data-label="Amount">{formatMoney(q.amount)}</td>
+                  <td data-label="Status">
                     <span className={`status status--${q.status}`}>{q.status}</span>
                   </td>
-                  <td>
+                  <td data-label="Lead">
                     {q.lead_id ? <Link to={`/leads/${q.lead_id}`}>Open lead</Link> : '—'}
                   </td>
-                  <td>{formatDate(q.created_at)}</td>
+                  <td data-label="Created">{formatDate(q.created_at)}</td>
                 </ClickRow>
               ))
             )}

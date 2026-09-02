@@ -173,7 +173,7 @@ export async function pollLeadEmails({
           }
 
           const normalized = buildNormalized(source, email);
-          const { lead, created } = await ingestNormalizedLead(source, normalized);
+          const { lead, created, aiReply } = await ingestNormalizedLead(source, normalized);
 
           if (created) results.ingested += 1;
           else results.updated += 1;
@@ -183,6 +183,7 @@ export async function pollLeadEmails({
             id: lead.id,
             name: lead.name,
             created,
+            aiReply: Boolean(aiReply),
           });
 
           if (markSeen) {

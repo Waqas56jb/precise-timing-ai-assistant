@@ -54,6 +54,14 @@ export default function Layout() {
     setOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const logout = () => {
     setSession();
     navigate('/login');

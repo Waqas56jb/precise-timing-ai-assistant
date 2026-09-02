@@ -99,7 +99,17 @@ function transcriptSection(transcript) {
  * Branded, mobile-responsive lead notification email (inline CSS only so it
  * renders correctly in Gmail, Outlook, and Apple Mail).
  */
-function buildLeadEmailHtml({ heading, badge, rows, transcript, contact, footNote }) {
+function aiReplySection(aiReply, channelLabel) {
+  if (!aiReply) return '';
+  return `
+    <div style="padding:8px 24px 4px;">
+      <p style="margin:14px 0 8px;font:800 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};text-transform:uppercase;letter-spacing:0.08em;">Suggested ${escapeHtml(channelLabel)} reply</p>
+      <p style="margin:0 0 10px;font:400 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};">Paste this into ${escapeHtml(channelLabel)}. ${escapeHtml(channelLabel)} does not allow sending replies from this system.</p>
+      <div style="background:#f3faf4;border:1px solid #b7e0c2;border-radius:12px;padding:16px 18px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:${BRAND.text};white-space:pre-wrap;word-break:break-word;">${escapeHtml(aiReply)}</div>
+    </div>`;
+}
+
+function buildLeadEmailHtml({ heading, badge, rows, transcript, contact, footNote, extraHtml }) {
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#eef2f7;">
@@ -131,6 +141,8 @@ function buildLeadEmailHtml({ heading, badge, rows, transcript, contact, footNot
             </table>
           </td></tr>
 
+          ${extraHtml ? `<tr><td>${extraHtml}</td></tr>` : ''}
+
           <!-- Transcript (chatbot leads) -->
           <tr><td>${transcriptSection(transcript)}</td></tr>
 
@@ -147,10 +159,17 @@ function buildLeadEmailHtml({ heading, badge, rows, transcript, contact, footNot
 </html>`;
 }
 
-function buildPlainText(rowsData, transcript) {
+function buildPlainText(rowsData, transcript, aiReply, channelLabel) {
   const lines = rowsData
     .filter(([, v]) => v != null && String(v).trim() !== '')
     .map(([k, v]) => `${k}: ${v}`);
+  if (aiReply) {
+    lines.push(
+      '',
+      `--- Suggested ${channelLabel || 'marketplace'} reply (paste into ${channelLabel || 'the inbox'}) ---`,
+      aiReply
+    );
+  }
   if (transcript?.length) {
     lines.push('', '--- Chat conversation ---');
     for (const m of transcript) {
@@ -276,10 +295,11 @@ const SOURCE_LABELS = {
 };
 
 /** Yelp / Thumbtack (and any other inbound) lead notification. */
-export async function sendInboundLeadEmail({ lead, isUpdate }) {
+export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript }) {
   const source = String(lead.source || 'inbound').toLowerCase();
   const label = SOURCE_LABELS[source] || source;
   const meta = lead.metadata || {};
+  const suggested = aiReply || meta.ai_reply || null;
   const rowsData = [
     ['Source', label],
     ['Name', lead.name],
@@ -299,15 +319,19 @@ export async function sendInboundLeadEmail({ lead, isUpdate }) {
     badge: isUpdate ? `${label} lead — updated` : `New ${label} lead`,
     heading: isUpdate ? `${label} Lead Updated` : `New Lead from ${label}`,
     rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
+    extraHtml: aiReplySection(suggested, label),
+    transcript,
     contact: { email: lead.email, phone: lead.phone },
-    footNote: `Captured from ${label} and saved to the Precise Timing admin inbox.`,
+    footNote: suggested
+      ? `AI drafted a ${label} reply. Paste it into ${label} — this system cannot send messages there.`
+      : `Captured from ${label} and saved to the Precise Timing admin inbox.`,
   });
 
   const who = lead.name || lead.phone || lead.email || 'New customer';
   return send({
-    subject: `${isUpdate ? 'Updated' : 'New'} ${label} Lead — ${who}`,
+    subject: `${isUpdate ? 'Updated' : 'New'} ${label} Lead — ${who}${suggested ? ' · AI reply ready' : ''}`,
     html,
-    text: buildPlainText(rowsData),
+    text: buildPlainText(rowsData, transcript, suggested, label),
     replyTo: lead.email || undefined,
   });
 }

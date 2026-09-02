@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import OpenAI from 'openai';
 import { waitUntil } from '@vercel/functions';
 import { env } from '../config/env.js';
@@ -17,7 +18,10 @@ import {
 import {
   upsertLeadFromExtraction,
   getLeadByConversationId,
+  getLeadById,
   markLeadNotified,
+  attachConversationToLead,
+  mergeLeadMetadata,
 } from './leads.js';
 import { createOrUpdateQuote } from './quotes.js';
 import { sendChatbotLeadEmail, isMailerConfigured } from './mailer.js';
@@ -194,6 +198,208 @@ export async function sendChatMessage({ conversationId, visitorId, message }) {
     lead: formatLeadResponse(lead),
     quote: null,
     intent: null,
+  };
+}
+
+const MARKETPLACE_MAX_TOKENS = 350;
+const MARKETPLACE_NOTE_LIMIT = 2500;
+
+function envFlag(name, fallback = true) {
+  const v = process.env[name];
+  if (v == null || v === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase());
+}
+
+export function isMarketplaceAiChannel(source) {
+  return String(source || '').toLowerCase() === 'yelp' && envFlag('YELP_AI_REPLY', true);
+}
+
+function marketplaceLabel(channel) {
+  const key = String(channel || '').toLowerCase();
+  if (key === 'thumbtack') return 'Thumbtack';
+  if (key === 'yelp') return 'Yelp';
+  return key || 'marketplace';
+}
+
+function messageFingerprint(text) {
+  return createHash('sha256').update(String(text || '')).digest('hex').slice(0, 32);
+}
+
+export function buildMarketplaceCustomerMessage(lead, channel = 'yelp') {
+  const label = marketplaceLabel(channel);
+  const lines = [`New ${label} inquiry.`];
+  if (lead?.name) lines.push(`Customer name: ${lead.name}`);
+  if (lead?.phone) lines.push(`Phone: ${lead.phone}`);
+  if (lead?.email) lines.push(`Email: ${lead.email}`);
+  if (lead?.move_size) lines.push(`Service: ${lead.move_size}`);
+  if (lead?.pickup_address) lines.push(`Location: ${lead.pickup_address}`);
+  if (lead?.dropoff_address) lines.push(`Drop-off: ${lead.dropoff_address}`);
+  if (lead?.move_date) lines.push(`Date requested: ${lead.move_date}`);
+  const notes = String(lead?.notes || '').trim();
+  if (notes) {
+    lines.push('', 'Customer message:', notes.slice(0, MARKETPLACE_NOTE_LIMIT));
+  } else {
+    lines.push(
+      '',
+      `The customer reached out on ${label} about moving, delivery, or junk removal. Reply and ask for the details needed for a quote.`
+    );
+  }
+  return lines.join('\n');
+}
+
+function marketplaceSystemExtra(channel) {
+  const label = marketplaceLabel(channel);
+  return `## ${label} marketplace reply
+This inquiry came from ${label}. Write a reply the owner can paste into ${label} messages.
+- Do not mention AI, this dashboard, email automation, or that this is a suggested reply
+- Sound like a real staff member at the company
+- 4–8 sentences, friendly and professional
+- Acknowledge their request and any details we already know
+- Ask only for missing quote details (move size, pickup, drop-off, date) — one or two questions max
+- Invite them to call or text the company phone for faster booking
+- Do not invent prices or promise a specific quote amount
+- Do not use markdown headings`;
+}
+
+async function generateMarketplaceAssistantReply({
+  conversationId,
+  lead,
+  extraSystem,
+  freshDraft = false,
+}) {
+  const [history, systemPrompt] = await Promise.all([
+    getChatHistory(conversationId, CHAT_MEMORY),
+    buildSystemPrompt(conversationId, lead),
+  ]);
+
+  let context = history;
+  if (freshDraft) {
+    const lastUser = [...history].reverse().find((m) => m.role === 'user');
+    context = lastUser ? [lastUser] : history;
+  }
+
+  const openAiMessages = sanitizeChatMessages([
+    { role: 'system', content: `${systemPrompt}\n\n${extraSystem}` },
+    ...context,
+  ]);
+
+  if (!openAiMessages.length || openAiMessages[0].role !== 'system') {
+    throw new Error('Chat system prompt is missing');
+  }
+
+  const completion = await getOpenAI().chat.completions.create({
+    model: MODEL,
+    messages: openAiMessages,
+    temperature: 0.4,
+    max_tokens: MARKETPLACE_MAX_TOKENS,
+  });
+
+  const reply = completion.choices[0]?.message?.content?.trim();
+  if (!reply) {
+    throw new Error('Empty response from OpenAI');
+  }
+
+  const tokensUsed = completion.usage?.total_tokens ?? null;
+  const assistantMessage = await addMessage({
+    conversationId,
+    role: 'assistant',
+    content: reply,
+    tokensUsed,
+  });
+
+  return { reply, tokensUsed, assistantMessage };
+}
+
+/**
+ * Draft a paste-ready reply for a Yelp (or other marketplace) lead.
+ * Yelp does not allow posting into their inbox from here — the office copies this.
+ */
+export async function replyToMarketplaceMessage({
+  lead,
+  customerMessage,
+  channel = 'yelp',
+  force = false,
+} = {}) {
+  if (!lead?.id) {
+    throw new Error('Lead is required');
+  }
+  if (!env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set');
+  }
+
+  const source = String(channel || lead.source || 'yelp').toLowerCase();
+  const text = String(
+    customerMessage || buildMarketplaceCustomerMessage(lead, source)
+  ).trim();
+  const fingerprint = messageFingerprint(text);
+  const previous = lead.metadata && typeof lead.metadata === 'object' ? lead.metadata : {};
+
+  if (!force && previous.ai_reply_fingerprint === fingerprint && previous.ai_reply) {
+    return {
+      reply: previous.ai_reply,
+      conversationId: lead.conversation_id || null,
+      skipped: true,
+    };
+  }
+
+  let conversationId = lead.conversation_id || null;
+  if (conversationId) {
+    const existing = await getConversation(conversationId);
+    if (!existing) conversationId = null;
+  }
+
+  if (!conversationId) {
+    const conv = await createConversation({
+      visitorId: `${source}:${lead.id}`,
+      channel: source,
+    });
+    conversationId = conv.id;
+    await attachConversationToLead(lead.id, conversationId);
+  }
+
+  const recent = await getRecentMessages(conversationId, 8);
+  const lastUser = [...recent].reverse().find((m) => m.role === 'user');
+  const lastAssistant = [...recent].reverse().find((m) => m.role === 'assistant');
+
+  if (!force && lastUser && lastUser.content.trim() === text && lastAssistant?.content) {
+    await mergeLeadMetadata(lead.id, {
+      ai_reply: lastAssistant.content,
+      ai_reply_at: new Date().toISOString(),
+      ai_reply_fingerprint: fingerprint,
+    });
+    return { reply: lastAssistant.content, conversationId, skipped: true };
+  }
+
+  const shouldAddUser = !lastUser || lastUser.content.trim() !== text;
+
+  if (shouldAddUser) {
+    await addMessage({
+      conversationId,
+      role: 'user',
+      content: text,
+    });
+  }
+
+  const freshLead = (await getLeadById(lead.id)) || lead;
+  const { reply, tokensUsed, assistantMessage } = await generateMarketplaceAssistantReply({
+    conversationId,
+    lead: freshLead,
+    extraSystem: marketplaceSystemExtra(source),
+    freshDraft: force,
+  });
+
+  await mergeLeadMetadata(lead.id, {
+    ai_reply: reply,
+    ai_reply_at: new Date().toISOString(),
+    ai_reply_fingerprint: fingerprint,
+  });
+
+  return {
+    reply,
+    conversationId,
+    skipped: false,
+    tokensUsed,
+    messageId: assistantMessage.id,
   };
 }
 

@@ -294,14 +294,38 @@ function mergeField(existing, incoming) {
   return incoming != null && incoming !== '' ? incoming : existing;
 }
 
-/** Remember which lead snapshot was last emailed so we don't notify twice. */
-export async function markLeadNotified(leadId, fingerprint) {
+/** Merge keys into lead.metadata without replacing the rest of the object. */
+export async function mergeLeadMetadata(leadId, patch = {}) {
   await query(
     `UPDATE ${T.leads}
      SET metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb, updated_at = now()
      WHERE id = $2`,
-    [JSON.stringify({ notify_fingerprint: fingerprint, notified_at: new Date().toISOString() }), leadId]
+    [JSON.stringify(patch), leadId]
   );
+}
+
+/** Link a chat transcript to an inbound marketplace lead. */
+export async function attachConversationToLead(leadId, conversationId) {
+  await query(
+    `UPDATE ${T.leads}
+     SET conversation_id = $1, updated_at = now()
+     WHERE id = $2`,
+    [conversationId, leadId]
+  );
+  await query(
+    `UPDATE ${T.conversations}
+     SET lead_id = $1, updated_at = now()
+     WHERE id = $2`,
+    [leadId, conversationId]
+  );
+}
+
+/** Remember which lead snapshot was last emailed so we don't notify twice. */
+export async function markLeadNotified(leadId, fingerprint) {
+  await mergeLeadMetadata(leadId, {
+    notify_fingerprint: fingerprint,
+    notified_at: new Date().toISOString(),
+  });
 }
 
 export async function upsertLeadFromExtraction({

@@ -9,6 +9,9 @@ import {
   Unlock,
   Phone,
   Mail,
+  Copy,
+  RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 import { api } from '../api.js';
 import {
@@ -34,6 +37,22 @@ const EMPTY = {
   status: 'new',
 };
 
+const HIDDEN_META = new Set([
+  'blocked',
+  'ai_reply',
+  'ai_reply_at',
+  'ai_reply_fingerprint',
+  'notify_fingerprint',
+  'notified_at',
+]);
+
+function lastAssistantReply(lead) {
+  const fromChat = [...(lead?.messages || [])]
+    .reverse()
+    .find((m) => m.role === 'assistant' && m.content);
+  return fromChat?.content || parseMeta(lead).ai_reply || '';
+}
+
 export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -41,6 +60,8 @@ export default function LeadDetail() {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const load = () =>
     api
@@ -64,6 +85,7 @@ export default function LeadDetail() {
   useEffect(() => {
     setLead(null);
     setError('');
+    setCopied(false);
     load();
   }, [id]);
 
@@ -102,6 +124,29 @@ export default function LeadDetail() {
   const setStatus = (status) => save({ status });
   const toggleBlock = () => save({ blocked: !isBlocked(lead) });
 
+  const generateReply = async () => {
+    setGenerating(true);
+    setError('');
+    try {
+      const updated = await api.generateAiReply(id, true);
+      setLead(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const copyReply = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('Could not copy the reply. Select the text and copy it manually.');
+    }
+  };
+
   const remove = async () => {
     if (!window.confirm('Delete this customer record? This cannot be undone.')) return;
     setSaving(true);
@@ -131,6 +176,9 @@ export default function LeadDetail() {
   const blocked = isBlocked(lead);
   const backTo = CHANNELS[meta.id] ? `/channels/${meta.id}` : '/leads';
   const phoneHref = lead.phone ? `sms:${String(lead.phone).replace(/[^\d+]/g, '')}` : '';
+  const isYelp = meta.id === 'yelp';
+  const draftReply = lastAssistantReply(lead);
+  const extraKeys = Object.keys(parseMeta(lead)).filter((k) => !HIDDEN_META.has(k));
 
   return (
     <div className="page">
@@ -239,9 +287,43 @@ export default function LeadDetail() {
         </section>
 
         <section className="panel">
-          <h2>
-            <MessageCircle size={18} /> Conversation
-          </h2>
+          <div className="panel__head">
+            <h2>
+              <MessageCircle size={18} /> Conversation
+            </h2>
+            {isYelp ? (
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={generateReply}
+                disabled={generating}
+              >
+                {draftReply ? <RefreshCw size={14} /> : <Sparkles size={14} />}
+                {generating ? 'Drafting…' : draftReply ? 'Regenerate' : 'Draft AI reply'}
+              </button>
+            ) : null}
+          </div>
+
+          {isYelp && draftReply ? (
+            <div className="ai-reply">
+              <p className="ai-reply__hint">
+                Paste this into Yelp. Yelp does not allow sending replies from this dashboard.
+              </p>
+              <p>{draftReply}</p>
+              <div className="ai-reply__actions">
+                <button type="button" className="btn btn--primary btn--sm" onClick={() => copyReply(draftReply)}>
+                  <Copy size={14} /> {copied ? 'Copied' : 'Copy reply'}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {isYelp && !draftReply ? (
+            <p className="muted">
+              No AI reply yet. Draft one here, then paste it into the Yelp conversation.
+            </p>
+          ) : null}
+
           {lead.messages?.length ? (
             <div className="transcript">
               {lead.messages
@@ -253,9 +335,9 @@ export default function LeadDetail() {
                   </div>
                 ))}
             </div>
-          ) : (
+          ) : !isYelp ? (
             <p className="muted">No chat transcript — this lead came from the form, Yelp, or Thumbtack.</p>
-          )}
+          ) : null}
 
           {lead.quotes?.length ? (
             <div className="quotes-mini">
@@ -303,13 +385,13 @@ export default function LeadDetail() {
             <dd>{blocked ? 'Yes' : 'No'}</dd>
           </div>
         </dl>
-        {Object.keys(parseMeta(lead)).filter((k) => k !== 'blocked').length ? (
+        {extraKeys.length ? (
           <div className="notes" style={{ marginTop: '1rem' }}>
             <h3>Source extras</h3>
             <pre>
               {JSON.stringify(
                 Object.fromEntries(
-                  Object.entries(parseMeta(lead)).filter(([k]) => k !== 'blocked')
+                  Object.entries(parseMeta(lead)).filter(([k]) => extraKeys.includes(k))
                 ),
                 null,
                 2

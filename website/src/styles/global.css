@@ -120,6 +120,7 @@ ol {
 /* ---------- Shell ---------- */
 .pt-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -135,7 +136,17 @@ ol {
 
 @media (max-width: 640px) {
   .pt-container {
-    width: min(100% - 2rem, var(--pt-max));
+    width: min(100% - 1.5rem, var(--pt-max));
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  .pt-btn {
+    min-height: 44px;
   }
 }
 

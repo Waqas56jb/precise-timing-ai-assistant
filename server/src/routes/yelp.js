@@ -20,7 +20,7 @@ router.get('/status', (_req, res) => {
     location: 'Cincinnati, OH 45251',
     notificationInbox: 'precisetimingtransports@gmail.com',
     fusionConfigured: isYelpFusionConfigured(),
-    note: 'No Yelp webhook/API on Integrations (Housecall Pro/Calendly only). Capture = IMAP poll Gmail, filter *@yelp.com → leads source=yelp.',
+    note: 'Yelp has no public send API. Incoming *@yelp.com emails become leads, then the AI drafts a paste-ready reply for the office.',
     endpoints: {
       webhook: 'POST /api/yelp/webhook',
       email: 'POST /api/yelp/email',
@@ -40,6 +40,7 @@ router.post('/webhook', auth, async (req, res) => {
       ok: true,
       created: result.created,
       lead: result.lead,
+      aiReply: result.aiReply || null,
     });
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
@@ -62,6 +63,7 @@ router.post('/email', auth, async (req, res) => {
       ok: true,
       created: result.created,
       lead: result.lead,
+      aiReply: result.aiReply || null,
     });
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });

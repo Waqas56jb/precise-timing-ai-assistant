@@ -47,6 +47,8 @@ export const api = {
       body: typeof patch === 'string' ? { status: patch } : patch,
     }),
   deleteLead: (id) => request(`/api/leads/${id}`, { method: 'DELETE' }),
+  generateAiReply: (id, force = true) =>
+    request(`/api/leads/${id}/ai-reply`, { method: 'POST', body: { force } }),
   quotes: () => request('/api/quotes?limit=100'),
   inboxStatus: () => request('/api/inbound-email/status', { auth: false }),
   pollInbox: () => request('/api/inbound-email/poll', { method: 'POST' }),

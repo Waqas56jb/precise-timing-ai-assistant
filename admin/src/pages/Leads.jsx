@@ -187,27 +187,27 @@ export default function Leads() {
                     to={`/leads/${lead.id}`}
                     className={isBlocked(lead) ? 'is-blocked' : ''}
                   >
-                    <td>
+                    <td data-label="Customer">
                       <Link to={`/leads/${lead.id}`} className="row-name">
                         {displayName(lead)}
                       </Link>
                       {isBlocked(lead) ? <div className="sub">Blocked</div> : null}
                     </td>
-                    <td>
+                    <td data-label="Source">
                       <span className={`badge tone-${meta.tone}`}>
                         <meta.icon size={12} /> {meta.label}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <span className={`status status--${lead.status}`}>{lead.status}</span>
                     </td>
-                    <td>
+                    <td data-label="Phone / Email">
                       <div>{lead.phone || '—'}</div>
                       <div className="sub">{lead.email || ''}</div>
                     </td>
-                    <td className="clip">{lead.move_size || lead.pickup_address || '—'}</td>
-                    <td>{formatDate(lead.created_at)}</td>
-                    <td>
+                    <td className="clip" data-label="Job">{lead.move_size || lead.pickup_address || '—'}</td>
+                    <td data-label="When">{formatDate(lead.created_at)}</td>
+                    <td className="actions" data-label="Actions">
                       <LeadActions
                         lead={lead}
                         busy={busyId === lead.id}

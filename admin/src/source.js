@@ -28,7 +28,7 @@ export const CHANNELS = {
   yelp: {
     kicker: 'Marketplace',
     title: 'Yelp',
-    blurb: 'Leads parsed from Yelp messages in Gmail.',
+    blurb: 'Leads from Yelp messages. The AI drafts a reply for you to paste into Yelp.',
   },
   thumbtack: {
     kicker: 'Marketplace',

@@ -158,19 +158,19 @@ export default function Dashboard() {
                   const meta = sourceMeta(lead.source);
                   return (
                     <ClickRow key={lead.id} to={`/leads/${lead.id}`}>
-                      <td>
+                      <td data-label="Customer">
                         <Link to={`/leads/${lead.id}`} className="row-name">
                           {displayName(lead)}
                         </Link>
                         <div className="sub">{lead.move_size || lead.notes?.slice(0, 48) || '—'}</div>
                       </td>
-                      <td>
+                      <td data-label="Source">
                         <span className={`badge tone-${meta.tone}`}>
                           <meta.icon size={12} /> {meta.label}
                         </span>
                       </td>
-                      <td>{lead.phone || lead.email || '—'}</td>
-                      <td>{formatDate(lead.created_at)}</td>
+                      <td data-label="Contact">{lead.phone || lead.email || '—'}</td>
+                      <td data-label="When">{formatDate(lead.created_at)}</td>
                     </ClickRow>
                   );
                 })
