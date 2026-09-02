@@ -1,7 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
+// Vite 8 / Rolldown rejects JSX inside .js unless the React plugin scans those files.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      include: /\.(js|jsx|ts|tsx)$/,
+    }),
+  ],
 })
