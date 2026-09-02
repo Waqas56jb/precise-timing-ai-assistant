@@ -99,12 +99,12 @@ function transcriptSection(transcript) {
  * Branded, mobile-responsive lead notification email (inline CSS only so it
  * renders correctly in Gmail, Outlook, and Apple Mail).
  */
-function aiReplySection(aiReply, channelLabel) {
+function aiReplySection(aiReply, channelLabel, inboxSent) {
   if (!aiReply) return '';
   return `
     <div style="padding:8px 24px 4px;">
-      <p style="margin:14px 0 8px;font:800 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};text-transform:uppercase;letter-spacing:0.08em;">Suggested ${escapeHtml(channelLabel)} reply</p>
-      <p style="margin:0 0 10px;font:400 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};">Paste this into ${escapeHtml(channelLabel)}. ${escapeHtml(channelLabel)} does not allow sending replies from this system.</p>
+      <p style="margin:14px 0 8px;font:800 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};text-transform:uppercase;letter-spacing:0.08em;">${inboxSent ? `Sent to ${escapeHtml(channelLabel)} inbox` : `Suggested ${escapeHtml(channelLabel)} reply`}</p>
+      <p style="margin:0 0 10px;font:400 12px Arial,Helvetica,sans-serif;color:${BRAND.muted};">${inboxSent ? `The customer should see this in ${escapeHtml(channelLabel)}.` : `If this did not reach ${escapeHtml(channelLabel)}, copy it from admin.`}</p>
       <div style="background:#f3faf4;border:1px solid #b7e0c2;border-radius:12px;padding:16px 18px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:${BRAND.text};white-space:pre-wrap;word-break:break-word;">${escapeHtml(aiReply)}</div>
     </div>`;
 }
@@ -205,6 +205,38 @@ async function send({ subject, html, text, replyTo, attachments }) {
   return { sent: true, messageId: info.messageId };
 }
 
+/**
+ * Reply to a Yelp lead notification. Yelp places the first email reply
+ * into the business inbox / customer thread.
+ */
+export async function sendYelpInboxReply({ to, subject, text, inReplyTo }) {
+  if (!isMailerConfigured()) {
+    return { sent: false, reason: 'not_configured' };
+  }
+  if (!to) {
+    return { sent: false, reason: 'missing_to' };
+  }
+  const body = String(text || '').trim();
+  if (!body) {
+    return { sent: false, reason: 'missing_text' };
+  }
+
+  const replySubject = /^re:/i.test(String(subject || ''))
+    ? subject
+    : `Re: ${subject || 'Your Yelp inquiry'}`;
+
+  const info = await getTransporter().sendMail({
+    from: `"${BRAND.name}" <${env.EMAIL_USER}>`,
+    to,
+    subject: replySubject,
+    text: body,
+    headers: {
+      ...(inReplyTo ? { 'In-Reply-To': inReplyTo, References: inReplyTo } : {}),
+    },
+  });
+  return { sent: true, messageId: info.messageId };
+}
+
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return '';
   return bytes >= 1024 * 1024
@@ -295,7 +327,7 @@ const SOURCE_LABELS = {
 };
 
 /** Yelp / Thumbtack (and any other inbound) lead notification. */
-export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript }) {
+export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript, inboxSent }) {
   const source = String(lead.source || 'inbound').toLowerCase();
   const label = SOURCE_LABELS[source] || source;
   const meta = lead.metadata || {};
@@ -319,12 +351,14 @@ export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript
     badge: isUpdate ? `${label} lead — updated` : `New ${label} lead`,
     heading: isUpdate ? `${label} Lead Updated` : `New Lead from ${label}`,
     rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
-    extraHtml: aiReplySection(suggested, label),
+    extraHtml: aiReplySection(suggested, label, inboxSent || Boolean(meta.yelp_inbox_replied_at)),
     transcript,
     contact: { email: lead.email, phone: lead.phone },
-    footNote: suggested
-      ? `AI drafted a ${label} reply. Paste it into ${label} — this system cannot send messages there.`
-      : `Captured from ${label} and saved to the Precise Timing admin inbox.`,
+    footNote: inboxSent
+      ? `AI already sent this reply into the ${label} inbox. No paste needed.`
+      : suggested
+        ? `AI drafted a ${label} reply. If it did not reach ${label}, copy it from admin.`
+        : `Captured from ${label} and saved to the Precise Timing admin inbox.`,
   });
 
   const who = lead.name || lead.phone || lead.email || 'New customer';

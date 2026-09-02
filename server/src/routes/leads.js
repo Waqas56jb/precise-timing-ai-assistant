@@ -12,6 +12,7 @@ import {
 } from '../services/leads.js';
 import { getMessages } from '../services/conversations.js';
 import { replyToMarketplaceMessage, isMarketplaceAiChannel } from '../services/chat.js';
+import { deliverYelpInboxReply } from '../services/yelp/inboxReply.js';
 
 const router = Router();
 
@@ -90,7 +91,7 @@ router.post('/:id/ai-reply', async (req, res) => {
     if (!lead) return res.status(404).json({ error: 'Lead not found' });
     if (!isMarketplaceAiChannel(lead.source)) {
       return res.status(400).json({
-        error: 'AI replies are only generated for Yelp leads. Paste the draft into Yelp — this system cannot send there.',
+        error: 'AI replies are only generated for Yelp leads.',
       });
     }
 
@@ -99,6 +100,12 @@ router.post('/:id/ai-reply', async (req, res) => {
       channel: lead.source,
       force: Boolean(req.body?.force),
     });
+    let afterDraft = (await getLeadById(lead.id)) || lead;
+    if (result.reply) {
+      await deliverYelpInboxReply(afterDraft, result.reply, {
+        force: Boolean(req.body?.force),
+      });
+    }
     const updated = await getLeadById(lead.id);
     const [messages, quotes] = await Promise.all([
       result.conversationId || updated?.conversation_id

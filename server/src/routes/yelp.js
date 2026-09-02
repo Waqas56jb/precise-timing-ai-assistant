@@ -20,7 +20,7 @@ router.get('/status', (_req, res) => {
     location: 'Cincinnati, OH 45251',
     notificationInbox: 'precisetimingtransports@gmail.com',
     fusionConfigured: isYelpFusionConfigured(),
-    note: 'Yelp has no public send API. Incoming *@yelp.com emails become leads, then the AI drafts a paste-ready reply for the office.',
+    note: 'Incoming *@yelp.com emails become leads. The AI replies by email so Yelp posts the first answer in the business inbox.',
     endpoints: {
       webhook: 'POST /api/yelp/webhook',
       email: 'POST /api/yelp/email',

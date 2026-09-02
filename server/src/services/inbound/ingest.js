@@ -5,6 +5,7 @@ import {
   replyToMarketplaceMessage,
 } from '../chat.js';
 import { getRecentMessages } from '../conversations.js';
+import { deliverYelpInboxReply } from '../yelp/inboxReply.js';
 import { env } from '../../config/env.js';
 
 function leadFingerprint(lead) {
@@ -31,6 +32,7 @@ async function notifyInboundLead(lead, created, extras = {}) {
       isUpdate: !created,
       aiReply: extras.aiReply || lead.metadata?.ai_reply || null,
       transcript: extras.transcript || null,
+      inboxSent: extras.inboxSent,
     });
     await markLeadNotified(lead.id, fingerprint);
   } catch (err) {
@@ -39,10 +41,12 @@ async function notifyInboundLead(lead, created, extras = {}) {
 }
 
 async function autoReplyMarketplaceLead(lead, source) {
-  if (!isMarketplaceAiChannel(source)) return { lead, aiReply: null, transcript: null };
+  if (!isMarketplaceAiChannel(source)) {
+    return { lead, aiReply: null, transcript: null, inbox: { sent: false } };
+  }
   if (!env.OPENAI_API_KEY) {
     console.warn('Skipping Yelp AI reply — OPENAI_API_KEY is not set');
-    return { lead, aiReply: null, transcript: null };
+    return { lead, aiReply: null, transcript: null, inbox: { sent: false } };
   }
 
   try {
@@ -50,14 +54,22 @@ async function autoReplyMarketplaceLead(lead, source) {
       lead,
       channel: source,
     });
-    const updated = (await getLeadById(lead.id)) || lead;
+    const afterDraft = (await getLeadById(lead.id)) || lead;
+    let inbox = { sent: false };
+    if (String(source).toLowerCase() === 'yelp' && result.reply) {
+      inbox = await deliverYelpInboxReply(afterDraft, result.reply);
+      if (!inbox.sent) {
+        console.warn('Yelp inbox auto-send skipped:', inbox.reason);
+      }
+    }
+    const updated = (await getLeadById(lead.id)) || afterDraft;
     const transcript = result.conversationId
       ? await getRecentMessages(result.conversationId, 20)
       : [];
-    return { lead: updated, aiReply: result.reply, transcript };
+    return { lead: updated, aiReply: result.reply, transcript, inbox };
   } catch (err) {
     console.warn('Yelp AI reply failed:', err.message);
-    return { lead, aiReply: null, transcript: null };
+    return { lead, aiReply: null, transcript: null, inbox: { sent: false } };
   }
 }
 
@@ -103,11 +115,13 @@ export async function ingestNormalizedLead(source, normalized) {
   await notifyInboundLead(replied.lead, result.created, {
     aiReply: replied.aiReply,
     transcript: replied.transcript,
+    inboxSent: Boolean(replied.inbox?.sent && !replied.inbox?.skipped),
   });
 
   return {
     ...result,
     lead: replied.lead,
     aiReply: replied.aiReply,
+    inbox: replied.inbox || { sent: false },
   };
 }

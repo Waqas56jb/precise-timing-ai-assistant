@@ -60,9 +60,16 @@ async function parseRawMessage(source) {
           .replace(/<[^>]+>/g, ' ')
       : '');
 
+  const replyToAddresses = (parsed.replyTo?.value || [])
+    .map((v) => v.address)
+    .filter(Boolean);
+  const fromAddress = parsed.from?.value?.[0]?.address || null;
+
   return {
     messageId: parsed.messageId || null,
     from: parsed.from?.text || '',
+    fromAddress,
+    replyToAddresses,
     subject: parsed.subject || '',
     text: text || '',
     html: parsed.html || '',
@@ -89,6 +96,9 @@ function buildNormalized(source, email) {
         ...(normalized.metadata || {}),
         email_message_id: email.messageId,
         email_from: email.from,
+        email_from_address: email.fromAddress || null,
+        email_reply_to: email.replyToAddresses || [],
+        email_subject: email.subject || null,
         email_date: email.date ? email.date.toISOString() : null,
       },
     };
@@ -173,7 +183,7 @@ export async function pollLeadEmails({
           }
 
           const normalized = buildNormalized(source, email);
-          const { lead, created, aiReply } = await ingestNormalizedLead(source, normalized);
+          const { lead, created, aiReply, inbox } = await ingestNormalizedLead(source, normalized);
 
           if (created) results.ingested += 1;
           else results.updated += 1;
@@ -184,6 +194,7 @@ export async function pollLeadEmails({
             name: lead.name,
             created,
             aiReply: Boolean(aiReply),
+            inboxSent: Boolean(inbox?.sent),
           });
 
           if (markSeen) {

@@ -44,6 +44,14 @@ const HIDDEN_META = new Set([
   'ai_reply_fingerprint',
   'notify_fingerprint',
   'notified_at',
+  'yelp_inbox_reply_fingerprint',
+  'yelp_inbox_message_id',
+  'email_reply_to',
+  'email_from_address',
+  'email_message_id',
+  'yelp_inbox_error',
+  'yelp_inbox_replied_at',
+  'yelp_inbox_reply_to',
 ]);
 
 function lastAssistantReply(lead) {
@@ -178,7 +186,10 @@ export default function LeadDetail() {
   const phoneHref = lead.phone ? `sms:${String(lead.phone).replace(/[^\d+]/g, '')}` : '';
   const isYelp = meta.id === 'yelp';
   const draftReply = lastAssistantReply(lead);
-  const extraKeys = Object.keys(parseMeta(lead)).filter((k) => !HIDDEN_META.has(k));
+  const extras = parseMeta(lead);
+  const inboxSent = Boolean(extras.yelp_inbox_replied_at);
+  const inboxError = extras.yelp_inbox_error;
+  const extraKeys = Object.keys(extras).filter((k) => !HIDDEN_META.has(k));
 
   return (
     <div className="page">
@@ -299,7 +310,7 @@ export default function LeadDetail() {
                 disabled={generating}
               >
                 {draftReply ? <RefreshCw size={14} /> : <Sparkles size={14} />}
-                {generating ? 'Drafting…' : draftReply ? 'Regenerate' : 'Draft AI reply'}
+                {generating ? 'Sending…' : draftReply ? 'Send again' : 'Send AI reply'}
               </button>
             ) : null}
           </div>
@@ -307,7 +318,11 @@ export default function LeadDetail() {
           {isYelp && draftReply ? (
             <div className="ai-reply">
               <p className="ai-reply__hint">
-                Paste this into Yelp. Yelp does not allow sending replies from this dashboard.
+                {inboxSent
+                  ? 'Sent to the Yelp inbox automatically. Check the envelope on biz.yelp.com.'
+                  : inboxError
+                    ? `Not sent to Yelp yet: ${inboxError}`
+                    : 'Waiting to send this into the Yelp inbox on the next lead email.'}
               </p>
               <p>{draftReply}</p>
               <div className="ai-reply__actions">
@@ -320,7 +335,7 @@ export default function LeadDetail() {
 
           {isYelp && !draftReply ? (
             <p className="muted">
-              No AI reply yet. Draft one here, then paste it into the Yelp conversation.
+              No AI reply yet. New Yelp leads get an automatic inbox reply. You can also send one here.
             </p>
           ) : null}
 

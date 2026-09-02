@@ -9,7 +9,7 @@
   "crons": [
     {
       "path": "/api/inbound-email/poll",
-      "schedule": "0 14 * * *"
+      "schedule": "*/10 * * * *"
     }
   ]
 }
