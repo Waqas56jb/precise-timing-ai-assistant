@@ -19,7 +19,8 @@ process.on('uncaughtException', (err) => {
 
 async function bootstrap() {
   const host = process.env.HOST || '0.0.0.0';
-  const port = Number(process.env.PORT || env.PORT || 3001);
+  const parsedPort = Number(process.env.PORT || env.PORT || 3001);
+  const port = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 3001;
   await new Promise((resolve, reject) => {
     const server = app.listen(port, host, resolve);
     server.on('error', reject);
