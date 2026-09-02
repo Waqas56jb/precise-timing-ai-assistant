@@ -390,9 +390,9 @@ npm run lead:ingest-test
 
 ## 🤝 Contributing / workflow
 
-1. Work only inside `admin/`, `client/`, or `server/`  
-2. Do not add extra packages or folders at the **repo root**  
-3. Run server + client in **two terminals** (no root `package.json`)  
+1. Work only inside `admin/`, `client/`, `server/`, or `website/`  
+2. Repo root should stay **only** those four folders plus `README.md` (no root `package.json`)  
+3. Railway: set **Root Directory** to `server`, start command `npm start`, and do **not** set `PORT` in Railway variables (Railway injects it)  
 
 ```bash
 # Terminal A

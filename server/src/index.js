@@ -1,7 +1,6 @@
 import './polyfills.js';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
-import { getSupabase } from './lib/supabase.js';
 import { migrateFileTokensToDb } from './services/quickbooks/tokenStore.js';
 import { startEmailWorker } from './services/inbound/emailWorker.js';
 import { seedDefaultAdmin } from './services/adminUsers.js';
@@ -30,17 +29,6 @@ async function bootstrap() {
   console.log(`Health: http://${host}:${port}/health`);
   console.log(`Chat API: http://${host}:${port}/api/chat/message`);
   console.log(`Yelp/Thumbtack: http://${host}:${port}/api/yelp/status`);
-
-  try {
-    const supabase = getSupabase();
-    if (supabase) {
-      console.log('Supabase client ready (service_role)');
-    } else {
-      console.log('Supabase service_role not set — using Postgres pool for DB');
-    }
-  } catch (err) {
-    console.warn('Supabase skipped:', err.message);
-  }
 
   try {
     const result = await migrateFileTokensToDb();

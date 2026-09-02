@@ -1,5 +1,0 @@
-[phases.install]
-cmds = ["npm install --prefix server"]
-
-[start]
-cmd = "npm start --prefix server"
