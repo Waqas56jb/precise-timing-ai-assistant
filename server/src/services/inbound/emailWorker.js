@@ -219,6 +219,7 @@ export async function pollLeadEmails({
 }
 
 let intervalHandle = null;
+let pollInFlight = false;
 
 /** Start background polling (for always-on server / VPS). */
 export function startEmailWorker() {
@@ -238,6 +239,8 @@ export function startEmailWorker() {
   );
 
   const tick = async () => {
+    if (pollInFlight) return;
+    pollInFlight = true;
     try {
       const result = await pollLeadEmails({
         markSeen: envBool('IMAP_MARK_SEEN', true),
@@ -251,6 +254,8 @@ export function startEmailWorker() {
       }
     } catch (err) {
       console.warn('[email-worker] poll failed:', err.message);
+    } finally {
+      pollInFlight = false;
     }
   };
 

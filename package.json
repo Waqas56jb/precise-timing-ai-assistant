@@ -1,0 +1,7 @@
+{
+  "name": "precise-timing-ai-assistant",
+  "private": true,
+  "scripts": {
+    "start": "npm start --prefix server"
+  }
+}

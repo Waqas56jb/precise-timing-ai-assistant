@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 import OpenAI from 'openai';
-import { waitUntil } from '@vercel/functions';
 import { env } from '../config/env.js';
 import { buildSystemPrompt } from './promptBuilder.js';
 import {
@@ -206,7 +205,12 @@ export async function sendChatMessage({ conversationId, visitorId, message }) {
   // killing setImmediate work — waitUntil() keeps it alive until done.
   const backgroundSync = processLeadAndQuote(conversation.id);
   if (process.env.VERCEL) {
-    waitUntil(backgroundSync);
+    try {
+      const { waitUntil } = await import('@vercel/functions');
+      waitUntil(backgroundSync);
+    } catch (err) {
+      console.warn('waitUntil unavailable:', err.message);
+    }
   }
 
   return {

@@ -10,10 +10,10 @@ const schema = z.object({
   // Optional so chat/leads can boot on Vercel even before QB is configured
   QB_CLIENT_ID: z.string().optional().default(''),
   QB_CLIENT_SECRET: z.string().optional().default(''),
-  QB_REDIRECT_URI: z
-    .string()
-    .url()
-    .default('http://localhost:3001/api/quickbooks/callback'),
+  QB_REDIRECT_URI: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().url().default('http://localhost:3001/api/quickbooks/callback')
+  ),
   QB_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
   QB_SCOPES: z.string().default('com.intuit.quickbooks.accounting'),
   OPENAI_API_KEY: z.string().optional(),

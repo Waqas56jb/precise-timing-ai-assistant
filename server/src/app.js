@@ -14,6 +14,16 @@ import { isMailerConfigured } from './services/mailer.js';
 import { isEmailWorkerConfigured } from './services/inbound/emailWorker.js';
 import { getAdminSecret } from './middleware/adminAuth.js';
 
+function healthPayload() {
+  return {
+    ok: true,
+    service: 'precise-timing-server',
+    emailConfigured: isMailerConfigured(),
+    imapConfigured: isEmailWorkerConfigured(),
+    adminConfigured: Boolean(getAdminSecret()),
+  };
+}
+
 export function createApp() {
   const app = express();
 
@@ -26,15 +36,9 @@ export function createApp() {
   );
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/health', (_req, res) => {
-    res.json({
-      ok: true,
-      service: 'precise-timing-server',
-      emailConfigured: isMailerConfigured(),
-      imapConfigured: isEmailWorkerConfigured(),
-      adminConfigured: Boolean(getAdminSecret()),
-    });
-  });
+  app.get('/', (_req, res) => res.json(healthPayload()));
+  app.get('/health', (_req, res) => res.json(healthPayload()));
+  app.get('/api/health', (_req, res) => res.json(healthPayload()));
 
   app.use('/api/quickbooks', quickbooksRouter);
   app.use('/api/business-settings', businessSettingsRouter);

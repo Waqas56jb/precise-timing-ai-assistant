@@ -10,6 +10,13 @@ const app = createApp();
 /** True when running as a Vercel serverless function (no long-lived process). */
 const isServerless = Boolean(process.env.VERCEL);
 
+process.on('unhandledRejection', (err) => {
+  console.warn('Unhandled rejection:', err?.message || err);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err?.message || err);
+});
+
 async function bootstrap() {
   const supabase = getSupabase();
   if (supabase) {
@@ -34,22 +41,37 @@ async function bootstrap() {
     console.warn('Admin seed skipped:', err.message);
   }
 
-  app.listen(env.PORT, () => {
-    console.log(`Server listening on http://localhost:${env.PORT}`);
-    console.log(`Business settings: http://localhost:${env.PORT}/api/business-settings`);
-    console.log(`Chat API: http://localhost:${env.PORT}/api/chat/message`);
-    console.log(`Yelp/Thumbtack: http://localhost:${env.PORT}/api/yelp/status`);
+  const host = process.env.HOST || '0.0.0.0';
+  const server = app.listen(env.PORT, host, () => {
+    console.log(`Server listening on http://${host}:${env.PORT}`);
+    console.log(`Health: http://${host}:${env.PORT}/health`);
+    console.log(`Chat API: http://${host}:${env.PORT}/api/chat/message`);
+    console.log(`Yelp/Thumbtack: http://${host}:${env.PORT}/api/yelp/status`);
 
-    const worker = startEmailWorker();
-    if (!worker.started && worker.reason !== 'EMAIL_WORKER_ENABLED is not true') {
-      console.log(`[email-worker] not started: ${worker.reason}`);
+    try {
+      const worker = startEmailWorker();
+      if (worker.started) {
+        console.log(`[email-worker] started (${worker.intervalMs || ''}ms)`);
+      } else if (worker.reason !== 'EMAIL_WORKER_ENABLED is not true') {
+        console.log(`[email-worker] not started: ${worker.reason}`);
+      }
+    } catch (err) {
+      console.warn('[email-worker] failed to start:', err.message);
     }
+  });
+
+  server.on('error', (err) => {
+    console.error('HTTP server error:', err.message);
+    process.exit(1);
   });
 }
 
 // Vercel imports this file via api/index.js — never call listen() there.
 if (!isServerless) {
-  bootstrap();
+  bootstrap().catch((err) => {
+    console.error('Bootstrap failed:', err?.message || err);
+    process.exit(1);
+  });
 }
 
 export default app;
