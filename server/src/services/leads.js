@@ -416,3 +416,50 @@ export async function upsertLeadFromExtraction({
 
   return lead;
 }
+
+export async function markLeadBooked(leadId, extra = {}) {
+  const current = await getLeadById(leadId);
+  if (!current) return null;
+
+  const { rows } = await query(
+    `UPDATE ${T.leads}
+     SET status = 'booked',
+         metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb,
+         updated_at = now()
+     WHERE id = $2
+     RETURNING *`,
+    [
+      JSON.stringify({
+        booked_at: current.metadata?.booked_at || new Date().toISOString(),
+        ...extra,
+      }),
+      leadId,
+    ]
+  );
+  return rows[0] || current;
+}
+
+export async function createBookingRecord({
+  leadId,
+  conversationId = null,
+  quoteId = null,
+  pickupAddress = null,
+  dropoffAddress = null,
+  notes = null,
+} = {}) {
+  if (!leadId) return null;
+  const existing = await query(
+    `SELECT id FROM ${T.bookings} WHERE lead_id = $1 ORDER BY created_at DESC LIMIT 1`,
+    [leadId]
+  );
+  if (existing.rows[0]) return existing.rows[0];
+
+  const { rows } = await query(
+    `INSERT INTO ${T.bookings}
+       (lead_id, conversation_id, quote_id, pickup_address, dropoff_address, status, notes)
+     VALUES ($1, $2, $3, $4, $5, 'confirmed', $6)
+     RETURNING *`,
+    [leadId, conversationId, quoteId, pickupAddress, dropoffAddress, notes]
+  );
+  return rows[0] || null;
+}

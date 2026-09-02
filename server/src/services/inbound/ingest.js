@@ -1,4 +1,4 @@
-import { upsertExternalLead, markLeadNotified, getLeadById } from '../leads.js';
+import { upsertExternalLead, markLeadNotified, getLeadById, markLeadBooked } from '../leads.js';
 import { isMailerConfigured, sendInboundLeadEmail } from '../mailer.js';
 import {
   isMarketplaceAiChannel,
@@ -112,7 +112,12 @@ export async function ingestNormalizedLead(source, normalized) {
   });
 
   const replied = await autoReplyMarketplaceLead(result.lead, source);
-  await notifyInboundLead(replied.lead, result.created, {
+  const yelpStatus = String(replied.lead?.metadata?.yelp_status || '').toLowerCase();
+  let lead = replied.lead;
+  if (['scheduled', 'done'].includes(yelpStatus) && lead.status !== 'booked') {
+    lead = (await markLeadBooked(lead.id, { yelp_status: yelpStatus })) || lead;
+  }
+  await notifyInboundLead(lead, result.created, {
     aiReply: replied.aiReply,
     transcript: replied.transcript,
     inboxSent: Boolean(replied.inbox?.sent && !replied.inbox?.skipped),
@@ -120,7 +125,7 @@ export async function ingestNormalizedLead(source, normalized) {
 
   return {
     ...result,
-    lead: replied.lead,
+    lead,
     aiReply: replied.aiReply,
     inbox: replied.inbox || { sent: false },
   };

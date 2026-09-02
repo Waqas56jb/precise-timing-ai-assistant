@@ -21,6 +21,7 @@ Return JSON only with this shape:
 {
   "hasIntent": boolean,
   "intentType": "quote" | "booking" | "support" | "general",
+  "confirmedBooking": boolean,
   "name": string | null,
   "phone": string | null,
   "email": string | null,
@@ -37,6 +38,7 @@ Rules:
 - hasIntent=true if customer wants a quote, booking, callback, or gave contact/move details.
 - intentType=quote when asking for price/estimate.
 - intentType=booking when asking to schedule.
+- confirmedBooking=true only if the customer clearly booked or confirmed a job (said they booked, accepted a specific date/time, or confirmed they scheduled). Asking about booking is not enough.
 - Only include fields explicitly mentioned or clearly implied.
 - move_size examples: studio, 1BR, 2 bedroom, 3BR.
 - Parse US phone numbers as digits with optional formatting.
@@ -77,6 +79,7 @@ function emptyExtraction() {
   return {
     hasIntent: false,
     intentType: 'general',
+    confirmedBooking: false,
     name: null,
     phone: null,
     email: null,
@@ -99,6 +102,7 @@ function normalizeExtraction(data) {
     intentType: ['quote', 'booking', 'support', 'general'].includes(data.intentType)
       ? data.intentType
       : 'general',
+    confirmedBooking: Boolean(data.confirmedBooking),
     name: pick(data.name),
     phone: pick(data.phone),
     email: pick(data.email),
@@ -123,6 +127,10 @@ export function shouldCaptureLead(extracted) {
     extracted.move_date;
 
   return Boolean(hasContact || hasMoveDetails);
+}
+
+export function isConfirmedBooking(extracted) {
+  return Boolean(extracted?.confirmedBooking);
 }
 
 export function canCalculateQuote(extracted) {

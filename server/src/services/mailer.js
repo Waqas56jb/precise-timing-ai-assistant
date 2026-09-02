@@ -284,10 +284,12 @@ export async function sendContactFormEmail(form, attachments = []) {
   });
 }
 
-/** Chatbot lead captured / updated by the AI assistant. */
-export async function sendChatbotLeadEmail({ lead, transcript, isUpdate }) {
+/** Chatbot lead captured / updated / booked by the AI assistant. */
+export async function sendChatbotLeadEmail({ lead, transcript, isUpdate, booked }) {
   const meta = lead.metadata || {};
   const rowsData = [
+    ['Status', booked || lead.status === 'booked' ? 'Booked' : lead.status || 'new'],
+    ['Source', lead.source || 'chatbot'],
     ['Name', lead.name],
     ['Phone', lead.phone],
     ['Email', lead.email],
@@ -300,18 +302,31 @@ export async function sendChatbotLeadEmail({ lead, transcript, isUpdate }) {
     ['Lead ID', lead.id],
   ];
 
+  const isBooked = Boolean(booked || lead.status === 'booked');
   const html = buildLeadEmailHtml({
-    badge: isUpdate ? 'Chatbot lead — updated info' : 'New chatbot lead',
-    heading: isUpdate ? 'Chatbot Lead Updated' : 'New Lead from AI Assistant',
+    badge: isBooked
+      ? 'Booked job — AI captured'
+      : isUpdate
+        ? 'Chatbot lead — updated info'
+        : 'New chatbot lead',
+    heading: isBooked
+      ? 'New Booked Lead'
+      : isUpdate
+        ? 'Chatbot Lead Updated'
+        : 'New Lead from AI Assistant',
     rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
     transcript,
     contact: { email: lead.email, phone: lead.phone },
-    footNote: 'Captured automatically by the AI chat assistant on the website.',
+    footNote: isBooked
+      ? 'Customer confirmed a booking in chat. Saved in the admin panel as Booked.'
+      : 'Captured automatically by the AI chat assistant on the website.',
   });
 
   const who = lead.name || lead.phone || lead.email || 'Website visitor';
   return send({
-    subject: `${isUpdate ? 'Updated' : 'New'} Chatbot Lead — ${who}`,
+    subject: isBooked
+      ? `Booked Lead — ${who}`
+      : `${isUpdate ? 'Updated' : 'New'} Chatbot Lead — ${who}`,
     html,
     text: buildPlainText(rowsData, transcript),
     replyTo: lead.email || undefined,
@@ -333,6 +348,7 @@ export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript
   const meta = lead.metadata || {};
   const suggested = aiReply || meta.ai_reply || null;
   const rowsData = [
+    ['Status', lead.status || 'new'],
     ['Source', label],
     ['Name', lead.name],
     ['Phone', lead.phone],
@@ -349,7 +365,12 @@ export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript
 
   const html = buildLeadEmailHtml({
     badge: isUpdate ? `${label} lead — updated` : `New ${label} lead`,
-    heading: isUpdate ? `${label} Lead Updated` : `New Lead from ${label}`,
+    heading:
+      lead.status === 'booked'
+        ? `Booked Lead from ${label}`
+        : isUpdate
+          ? `${label} Lead Updated`
+          : `New Lead from ${label}`,
     rows: rowsData.map(([k, v]) => infoRow(k, v)).join(''),
     extraHtml: aiReplySection(suggested, label, inboxSent || Boolean(meta.yelp_inbox_replied_at)),
     transcript,
@@ -363,7 +384,10 @@ export async function sendInboundLeadEmail({ lead, isUpdate, aiReply, transcript
 
   const who = lead.name || lead.phone || lead.email || 'New customer';
   return send({
-    subject: `${isUpdate ? 'Updated' : 'New'} ${label} Lead — ${who}${suggested ? ' · AI reply ready' : ''}`,
+    subject:
+      lead.status === 'booked'
+        ? `Booked ${label} Lead — ${who}`
+        : `${isUpdate ? 'Updated' : 'New'} ${label} Lead — ${who}${suggested ? ' · AI reply ready' : ''}`,
     html,
     text: buildPlainText(rowsData, transcript, suggested, label),
     replyTo: lead.email || undefined,

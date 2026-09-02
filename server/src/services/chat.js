@@ -14,6 +14,7 @@ import {
   extractLeadFromMessages,
   shouldCaptureLead,
   canCalculateQuote,
+  isConfirmedBooking,
 } from './leadExtractor.js';
 import {
   upsertLeadFromExtraction,
@@ -22,6 +23,8 @@ import {
   markLeadNotified,
   attachConversationToLead,
   mergeLeadMetadata,
+  markLeadBooked,
+  createBookingRecord,
 } from './leads.js';
 import { createOrUpdateQuote } from './quotes.js';
 import { sendChatbotLeadEmail, isMailerConfigured } from './mailer.js';
@@ -69,9 +72,16 @@ function leadFingerprint(lead) {
  * customer becomes contactable (phone or email), and again only if the core
  * lead info changes afterwards — never on every chat message.
  */
-async function notifyChatbotLead(lead, transcript) {
+async function notifyChatbotLead(lead, transcript, { booked = false } = {}) {
   if (!lead || !isMailerConfigured()) return;
-  if (!lead.phone && !lead.email) return;
+  if (!lead.phone && !lead.email && !booked) return;
+
+  if (booked) {
+    if (lead.metadata?.booked_notified_at) return;
+    await sendChatbotLeadEmail({ lead, transcript, booked: true });
+    await mergeLeadMetadata(lead.id, { booked_notified_at: new Date().toISOString() });
+    return;
+  }
 
   const fingerprint = leadFingerprint(lead);
   const previous = lead.metadata?.notify_fingerprint || null;
@@ -101,7 +111,17 @@ async function processLeadAndQuote(conversationId) {
       });
     }
 
-    if (lead) {
+    if (lead && isConfirmedBooking(extracted)) {
+      lead = await markLeadBooked(lead.id, { intentType: extracted.intentType });
+      await createBookingRecord({
+        leadId: lead.id,
+        conversationId,
+        pickupAddress: lead.pickup_address,
+        dropoffAddress: lead.dropoff_address,
+        notes: lead.notes,
+      });
+      await notifyChatbotLead(lead, messages, { booked: true });
+    } else if (lead) {
       await notifyChatbotLead(lead, messages);
     }
   } catch (err) {
