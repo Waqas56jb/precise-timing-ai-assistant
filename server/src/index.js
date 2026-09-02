@@ -19,14 +19,15 @@ process.on('uncaughtException', (err) => {
 
 async function bootstrap() {
   const host = process.env.HOST || '0.0.0.0';
+  const port = Number(process.env.PORT || env.PORT || 3001);
   await new Promise((resolve, reject) => {
-    const server = app.listen(env.PORT, host, resolve);
+    const server = app.listen(port, host, resolve);
     server.on('error', reject);
   });
-  console.log(`Server listening on http://${host}:${env.PORT}`);
-  console.log(`Health: http://${host}:${env.PORT}/health`);
-  console.log(`Chat API: http://${host}:${env.PORT}/api/chat/message`);
-  console.log(`Yelp/Thumbtack: http://${host}:${env.PORT}/api/yelp/status`);
+  console.log(`Server listening on http://${host}:${port}`);
+  console.log(`Health: http://${host}:${port}/health`);
+  console.log(`Chat API: http://${host}:${port}/api/chat/message`);
+  console.log(`Yelp/Thumbtack: http://${host}:${port}/api/yelp/status`);
 
   const supabase = getSupabase();
   if (supabase) {

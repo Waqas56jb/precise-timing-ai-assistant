@@ -14,7 +14,10 @@ const schema = z.object({
     (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
     z.string().url().default('http://localhost:3001/api/quickbooks/callback')
   ),
-  QB_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
+  QB_ENVIRONMENT: z.preprocess((v) => {
+    const s = String(v || '').trim().toLowerCase();
+    return s === 'production' || s === 'sandbox' ? s : 'sandbox';
+  }, z.enum(['sandbox', 'production'])),
   QB_SCOPES: z.string().default('com.intuit.quickbooks.accounting'),
   OPENAI_API_KEY: z.string().optional(),
   SUPABASE_URL: z.preprocess(
@@ -36,12 +39,13 @@ const schema = z.object({
   IMAP_MAILBOX: z.string().optional().default('INBOX'),
 });
 
+const isManagedHost = isVercel || Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID);
+
 const parsed = schema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error('Invalid environment:', parsed.error.flatten().fieldErrors);
-  // process.exit kills the entire Vercel serverless function before it can respond
-  if (!isVercel) {
+  if (!isManagedHost) {
     process.exit(1);
   }
   throw new Error(
