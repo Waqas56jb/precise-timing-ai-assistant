@@ -12,9 +12,14 @@ export function getSupabase() {
     return null;
   }
   if (!client) {
-    client = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    try {
+      client = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+    } catch (err) {
+      console.warn('Supabase client unavailable:', err.message);
+      return null;
+    }
   }
   return client;
 }

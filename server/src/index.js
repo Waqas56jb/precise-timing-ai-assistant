@@ -30,11 +30,15 @@ async function bootstrap() {
   console.log(`Chat API: http://${host}:${port}/api/chat/message`);
   console.log(`Yelp/Thumbtack: http://${host}:${port}/api/yelp/status`);
 
-  const supabase = getSupabase();
-  if (supabase) {
-    console.log('Supabase client ready (service_role)');
-  } else {
-    console.log('Supabase service_role not set — using Postgres pool for DB');
+  try {
+    const supabase = getSupabase();
+    if (supabase) {
+      console.log('Supabase client ready (service_role)');
+    } else {
+      console.log('Supabase service_role not set — using Postgres pool for DB');
+    }
+  } catch (err) {
+    console.warn('Supabase skipped:', err.message);
   }
 
   try {
@@ -69,7 +73,6 @@ async function bootstrap() {
 if (!isServerless) {
   bootstrap().catch((err) => {
     console.error('Bootstrap failed:', err?.message || err);
-    process.exit(1);
   });
 }
 
