@@ -18,7 +18,7 @@ https://precise-timing-ai-assistant-client.vercel.app/
 
 It talks to:
 
-https://precise-timing-ai-assistant-server.vercel.app/
+https://precise-timing-ai-assistant-production.up.railway.app/
 
 ## Embed bundle for the website
 

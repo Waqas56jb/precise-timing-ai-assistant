@@ -1,19 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-
-function resolveApiBase() {
-  const env = import.meta.env.VITE_CHAT_API_URL;
-  if (env) return String(env).replace(/\/$/, '');
-  if (typeof window !== 'undefined') {
-    const { hostname, port } = window.location;
-    if (port === '5173' || port === '4173' || hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://127.0.0.1:3001';
-    }
-    if (hostname.includes('vercel.app') || hostname.includes('precise-timing')) {
-      return 'https://precise-timing-ai-assistant-server.vercel.app';
-    }
-  }
-  return 'https://precise-timing-ai-assistant-server.vercel.app';
-}
+import { resolveApiBase } from './apiBase.js';
 
 export function applyAppearance(settings) {
   if (typeof document === 'undefined') return;

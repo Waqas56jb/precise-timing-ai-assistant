@@ -25,8 +25,9 @@
 | Layer | Role | Status |
 |:------|:-----|:------:|
 | 🎨 **client/** | Embeddable React chat widget (center preview + float launcher) | ✅ Live |
-| ⚙️ **server/** | Express API, OpenAI chat, leads, quotes, QuickBooks OAuth | ✅ Live |
+| ⚙️ **server/** | Express API on [Railway](https://precise-timing-ai-assistant-production.up.railway.app/) | ✅ Live |
 | 🗂️ **admin/** | Dashboard for website, chatbot, Yelp & Thumbtack leads | ✅ Live |
+| 🌐 **website/** | Marketing site + quote form + chat widget | ✅ Live |
 
 ---
 

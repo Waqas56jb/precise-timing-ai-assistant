@@ -20,6 +20,6 @@ Sign in with `admin@gmail.com` and the password in `ADMIN_PASSWORD` (`server/.en
 |--------|--------|
 | Root Directory | `admin` |
 | Framework | Vite |
-| Env | `VITE_API_URL=https://precise-timing-ai-assistant-server.vercel.app` |
+| Env | `VITE_API_URL=https://precise-timing-ai-assistant-production.up.railway.app` |
 
 Also set `ADMIN_SECRET` on the **server** project (same value you type at login).

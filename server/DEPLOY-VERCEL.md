@@ -69,11 +69,12 @@ Expected:
 { "ok": true, "service": "precise-timing-server" }
 ```
 
-Then point the website widget at this URL:
+Production API is Railway (not this Vercel function):
 
 ```env
-# website/.env
-VITE_CHAT_API_URL=https://YOUR-VERCEL-DOMAIN
+# website/.env.production and admin/.env.production
+VITE_CHAT_API_URL=https://precise-timing-ai-assistant-production.up.railway.app
+VITE_API_URL=https://precise-timing-ai-assistant-production.up.railway.app
 ```
 
 Rebuild the website after changing that.

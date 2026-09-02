@@ -19,7 +19,7 @@
 `website/.env.production` sets:
 
 ```env
-VITE_CHAT_API_URL=https://precise-timing-ai-assistant-server.vercel.app
+VITE_CHAT_API_URL=https://precise-timing-ai-assistant-production.up.railway.app
 ```
 
 The floating widget in the bottom-right uses that URL in production.
@@ -29,5 +29,5 @@ The floating widget in the bottom-right uses that URL in production.
 | App | URL |
 |-----|-----|
 | Website | https://precise-timing-ai-assistant-website.vercel.app/ |
-| Server | https://precise-timing-ai-assistant-server.vercel.app/ |
+| Server | https://precise-timing-ai-assistant-production.up.railway.app/ |
 | Client preview | https://precise-timing-ai-assistant-client.vercel.app/ |

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { resolveApiBase } from '../lib/apiBase';
 import { QUOTE_FIELDS, SITE } from '../data/site';
 import {
   UserIcon,
@@ -33,12 +34,12 @@ const TYPE_OVERRIDES = { date: 'date', stairs: 'number' };
 
 const SERVICE_CHIPS = ['Moving', 'Labor only', 'Delivery', 'Junk removal'];
 
-const API_BASE = import.meta.env.VITE_CHAT_API_URL || 'http://localhost:3001';
+const API_BASE = resolveApiBase();
 
 const EMPTY_FORM = () =>
   Object.fromEntries([...QUOTE_FIELDS.map((f) => [f.name, '']), ['details', '']]);
 
-/* Attachment limits — the API (Vercel) accepts ~4.5 MB per request */
+/* Attachment limits — keep payloads small for the API */
 const MAX_FILES = 5;
 const MAX_TOTAL_BYTES = 3.5 * 1024 * 1024;
 const ACCEPT = 'image/*,.pdf,.doc,.docx,.txt';

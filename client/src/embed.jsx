@@ -12,9 +12,16 @@ import {
 const STYLE_ID = 'precise-timing-chat-styles';
 const HOST_ID = 'precise-timing-chat-widget';
 
+const PRODUCTION_API = 'https://precise-timing-ai-assistant-production.up.railway.app';
+
 function resolveApiUrl(script) {
-  const attr = script?.getAttribute('data-api-url');
-  if (attr?.trim()) return attr.trim();
+  const attr = script?.getAttribute('data-api-url')?.trim();
+  if (attr) {
+    if (attr.includes('precise-timing-ai-assistant-server.vercel.app')) {
+      return PRODUCTION_API;
+    }
+    return attr;
+  }
 
   if (typeof window !== 'undefined') {
     const { hostname, port, origin } = window.location;
@@ -24,19 +31,19 @@ function resolveApiUrl(script) {
       return 'http://127.0.0.1:3001';
     }
 
-    // Known Vercel frontend hosts → production API
+    // Live website / widget preview → Railway API
     if (
       hostname.includes('precise-timing-ai-assistant-website') ||
       hostname.includes('precise-timing-ai-assistant-client') ||
       hostname.endsWith('.vercel.app')
     ) {
-      return 'https://precise-timing-ai-assistant-server.vercel.app';
+      return PRODUCTION_API;
     }
 
     // Same-origin deploy (API proxied / hosted together)
     return origin;
   }
-  return 'https://precise-timing-ai-assistant-server.vercel.app';
+  return PRODUCTION_API;
 }
 
 function getConfigFromScript() {

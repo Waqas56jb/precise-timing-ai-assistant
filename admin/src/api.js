@@ -1,6 +1,15 @@
 import { getToken, setSession } from './auth.js';
 
-const API = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const PRODUCTION_API = 'https://precise-timing-ai-assistant-production.up.railway.app';
+
+function resolveAdminApi() {
+  const raw = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '').trim();
+  if (raw.includes('precise-timing-ai-assistant-server.vercel.app')) return PRODUCTION_API;
+  if (raw) return raw;
+  return import.meta.env.PROD ? PRODUCTION_API : '';
+}
+
+const API = resolveAdminApi();
 
 async function request(path, { method = 'GET', body, auth = true } = {}) {
   const headers = {};
