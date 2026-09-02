@@ -96,12 +96,13 @@ async function buildBasePrompt() {
   const name = settings?.business_name || 'Precise Timing Transports';
   const phone = settings?.business_phone || '';
   const bookingUrl = settings?.godaddy_booking_url || '';
+  const websiteUrl = settings?.website_url || 'https://www.precisetimingtransports.com/';
   const extra = settings?.chatbot_system_prompt_extra || '';
   const servicesList = services.length
     ? services.map((s) => s.name).join(', ')
     : 'Local moving & delivery';
 
-  cachedBasePrompt = { name, phone, bookingUrl, extra, servicesList, areas, pricing, faqs };
+  cachedBasePrompt = { name, phone, bookingUrl, websiteUrl, extra, servicesList, areas, pricing, faqs };
   cacheTime = Date.now();
   return cachedBasePrompt;
 }
@@ -112,7 +113,7 @@ export async function buildSystemPrompt(_conversationId = null, lead = null) {
     Promise.resolve(formatLeadMemory(lead)),
   ]);
 
-  const { name, phone, bookingUrl, extra, servicesList, areas, pricing, faqs } = base;
+  const { name, phone, bookingUrl, websiteUrl, extra, servicesList, areas, pricing, faqs } = base;
 
   return `You are the assistant for ${name} (US moving/delivery).
 
@@ -126,7 +127,8 @@ export async function buildSystemPrompt(_conversationId = null, lead = null) {
 1. Move size → 2. Pickup → 3. Dropoff → 4. Date → 5. Name → 6. Phone/email
 
 ## Booking
-${bookingUrl ? `Link: ${bookingUrl}` : 'Team sends link after details.'}
+Website (chat + quote form): ${websiteUrl}
+${bookingUrl ? `Booking link: ${bookingUrl}` : 'Team follows up after details.'}
 
 Phone: ${phone || 'after lead'} | Services: ${servicesList}
 

@@ -27,6 +27,9 @@ import {
 } from './leads.js';
 import { createOrUpdateQuote } from './quotes.js';
 import { sendChatbotLeadEmail, isMailerConfigured } from './mailer.js';
+import { getBusinessSettings } from './businessSettings.js';
+
+const DEFAULT_WEBSITE_URL = 'https://www.precisetimingtransports.com/';
 
 let openai;
 
@@ -271,18 +274,28 @@ export function buildMarketplaceCustomerMessage(lead, channel = 'yelp') {
   return lines.join('\n');
 }
 
-function marketplaceSystemExtra(channel) {
+function marketplaceWebsiteUrl(settings) {
+  const raw = String(settings?.website_url || DEFAULT_WEBSITE_URL).trim();
+  if (!raw) return DEFAULT_WEBSITE_URL;
+  return raw.endsWith('/') ? raw : `${raw}/`;
+}
+
+function marketplaceSystemExtra(channel, websiteUrl) {
   const label = marketplaceLabel(channel);
+  const site = marketplaceWebsiteUrl({ website_url: websiteUrl });
   return `## ${label} marketplace reply
-This inquiry came from ${label}. Write a reply the owner can paste into ${label} messages.
+This inquiry came from ${label}. This reply is sent into the ${label} inbox as the first answer.
 - Do not mention AI, this dashboard, email automation, or that this is a suggested reply
 - Sound like a real staff member at the company
 - 4–8 sentences, friendly and professional
 - Acknowledge their request and any details we already know
-- Ask only for missing quote details (move size, pickup, drop-off, date) — one or two questions max
-- Invite them to call or text the company phone for faster booking
+- Ask at most one short question
+- Always include this exact website link: ${site}
+- Tell them the fastest way to get a quote and book is to open that site and use the chat (bottom right) or the quote form — we will collect their details there
+- Invite them to call or text the company phone if they prefer
 - Do not invent prices or promise a specific quote amount
-- Do not use markdown headings`;
+- Do not use markdown headings
+- Plain text only`;
 }
 
 async function generateMarketplaceAssistantReply({
@@ -405,10 +418,11 @@ export async function replyToMarketplaceMessage({
   }
 
   const freshLead = (await getLeadById(lead.id)) || lead;
+  const settings = await getBusinessSettings().catch(() => null);
   const { reply, tokensUsed, assistantMessage } = await generateMarketplaceAssistantReply({
     conversationId,
     lead: freshLead,
-    extraSystem: marketplaceSystemExtra(source),
+    extraSystem: marketplaceSystemExtra(source, marketplaceWebsiteUrl(settings)),
     freshDraft: force,
   });
 
