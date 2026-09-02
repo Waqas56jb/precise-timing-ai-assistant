@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": "22"
   },
   "packageManager": "npm@10.9.2",
   "scripts": {
@@ -37,6 +37,7 @@
     "open": "^10.1.0",
     "openai": "^7.5.0",
     "pg": "^8.23.0",
+    "ws": "^8.21.3",
     "zod": "^3.24.2"
   }
 }
