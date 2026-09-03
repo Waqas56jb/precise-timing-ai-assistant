@@ -3,6 +3,7 @@ import { simpleParser } from 'mailparser';
 import { env } from '../../config/env.js';
 import { detectLeadEmailSource } from './detectSource.js';
 import { parseYelpLead } from '../yelp/parseLead.js';
+import { isYelpNearbyJob } from '../yelp/classifyEmail.js';
 import { parseThumbtackLead } from '../thumbtack/parseLead.js';
 import { ingestNormalizedLead } from './ingest.js';
 
@@ -177,6 +178,14 @@ export async function pollLeadEmails({
           if (!source) {
             results.skipped += 1;
             if (markSeen && envBool('IMAP_MARK_UNKNOWN_SEEN', false)) {
+              await client.messageFlagsAdd(uid, ['\\Seen'], { uid: true });
+            }
+            continue;
+          }
+
+          if (source === 'yelp' && isYelpNearbyJob(email)) {
+            results.skipped += 1;
+            if (markSeen) {
               await client.messageFlagsAdd(uid, ['\\Seen'], { uid: true });
             }
             continue;

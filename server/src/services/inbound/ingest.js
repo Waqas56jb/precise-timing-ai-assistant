@@ -8,6 +8,14 @@ import { getRecentMessages } from '../conversations.js';
 import { deliverYelpInboxReply } from '../yelp/inboxReply.js';
 import { env } from '../../config/env.js';
 
+function isDirectYelpLead(lead) {
+  const type = String(lead?.metadata?.yelp_notification_type || '').toLowerCase();
+  if (type === 'nearby_job') return false;
+  if (type === 'direct_lead') return true;
+  // Webhooks have no email template — treat as a real lead.
+  return String(lead?.metadata?.channel || '') !== 'email';
+}
+
 function leadFingerprint(lead) {
   return JSON.stringify([
     lead.name,
@@ -43,6 +51,9 @@ async function notifyInboundLead(lead, created, extras = {}) {
 async function autoReplyMarketplaceLead(lead, source) {
   if (!isMarketplaceAiChannel(source)) {
     return { lead, aiReply: null, transcript: null, inbox: { sent: false } };
+  }
+  if (String(source).toLowerCase() === 'yelp' && !isDirectYelpLead(lead)) {
+    return { lead, aiReply: null, transcript: null, inbox: { sent: false, reason: 'not_direct_lead' } };
   }
   if (!env.OPENAI_API_KEY) {
     console.warn('Skipping Yelp AI reply — OPENAI_API_KEY is not set');

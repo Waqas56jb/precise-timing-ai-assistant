@@ -94,6 +94,11 @@ router.post('/:id/ai-reply', async (req, res) => {
         error: 'AI replies are only generated for Yelp leads.',
       });
     }
+    if (String(lead.metadata?.yelp_notification_type || '') === 'nearby_job') {
+      return res.status(400).json({
+        error: 'AI replies are only sent on your Yelp leads, not Nearby Jobs.',
+      });
+    }
 
     const result = await replyToMarketplaceMessage({
       lead,

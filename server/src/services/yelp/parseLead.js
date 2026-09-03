@@ -7,6 +7,7 @@ import {
   normalizeEmail,
   normalizeDate,
 } from '../inbound/parseHelpers.js';
+import { classifyYelpNotification } from './classifyEmail.js';
 
 /**
  * Yelp lead normalize (Precise Timing Transports — Aug 24 findings)
@@ -92,6 +93,7 @@ function fromWebhookPayload(body = {}) {
       service_type: serviceType || null,
       zip: zip || null,
       yelp_status: pickFirst(root.status, project.status) || null,
+      yelp_notification_type: 'direct_lead',
       raw_keys: Object.keys(body || {}),
     },
   };
@@ -179,6 +181,8 @@ function fromEmail({ subject, text, html } = {}) {
 
   const externalId = idMatch?.[1] || null;
 
+  const classified = classifyYelpNotification({ subject, text, html });
+
   const noteParts = [];
   if (details) noteParts.push(details);
   if (serviceType) noteParts.push(`Service: ${serviceType}`);
@@ -203,6 +207,8 @@ function fromEmail({ subject, text, html } = {}) {
       zip: zip || null,
       dates_requested: datesRequested || null,
       yelp_status: yelpStatus || null,
+      yelp_notification_type: classified.type,
+      yelp_notification_reason: classified.reason,
       business: 'Precise Timing Transports',
       notification_inbox: 'precisetimingtransports@gmail.com',
     },
