@@ -36,6 +36,17 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+.boot {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.boot--err { color: var(--red); }
 a { color: var(--blue); text-decoration: none; }
 button, input, textarea, select { font: inherit; }
 button, a, .chip, .icon-btn, .navlink {

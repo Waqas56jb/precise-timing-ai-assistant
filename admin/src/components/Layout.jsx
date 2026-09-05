@@ -1,11 +1,10 @@
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Users,
   FileText,
   Inbox,
-  LogOut,
   Truck,
   Globe,
   MessageCircle,
@@ -16,7 +15,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { setSession, getAdminEmail, getAdminName } from '../auth.js';
+import { getAdminEmail, getAdminName } from '../auth.js';
 import ErrorBoundary from './ErrorBoundary.jsx';
 
 const GROUPS = [
@@ -46,7 +45,6 @@ const GROUPS = [
 ];
 
 export default function Layout() {
-  const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -61,11 +59,6 @@ export default function Layout() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
-
-  const logout = () => {
-    setSession();
-    navigate('/login');
-  };
 
   return (
     <div className={`shell ${open ? 'shell--nav-open' : ''}`}>
@@ -111,13 +104,12 @@ export default function Layout() {
           </div>
         ))}
 
-        <button type="button" className="navlink navlink--out" onClick={logout}>
-          <LogOut size={18} />
+        <div className="navlink navlink--out">
           <span>
-            Sign out
+            Signed in
             <small className="navlink__sub">{getAdminName() || getAdminEmail() || 'Admin'}</small>
           </span>
-        </button>
+        </div>
       </aside>
 
       <div className="workspace">

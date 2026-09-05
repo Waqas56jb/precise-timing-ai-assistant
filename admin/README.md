@@ -12,7 +12,7 @@ npm run dev
 
 Opens at http://localhost:5174 and proxies `/api` to the server on port 3001.
 
-Sign in with `admin@gmail.com` and the password in `ADMIN_PASSWORD` (`server/.env`).
+The dashboard opens directly (no login page).
 
 ## Vercel
 

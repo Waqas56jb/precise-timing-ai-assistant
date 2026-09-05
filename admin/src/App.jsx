@@ -1,7 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { isLoggedIn } from './auth.js';
+import { ensureAdminSession } from './api.js';
 import Layout from './components/Layout.jsx';
-import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Leads from './pages/Leads.jsx';
 import LeadDetail from './pages/LeadDetail.jsx';
@@ -10,23 +10,27 @@ import Inbox from './pages/Inbox.jsx';
 import Settings from './pages/Settings.jsx';
 import Customers from './pages/Customers.jsx';
 
-function Guard({ children }) {
-  if (!isLoggedIn()) return <Navigate to="/login" replace />;
-  return children;
-}
-
 export default function App() {
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    ensureAdminSession()
+      .catch((err) => setError(err.message || 'Could not open the dashboard'))
+      .finally(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return <div className="boot">Loading dashboard…</div>;
+  }
+
+  if (error) {
+    return <div className="boot boot--err">{error}</div>;
+  }
+
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <Guard>
-            <Layout />
-          </Guard>
-        }
-      >
+      <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="channels/:source" element={<Leads />} />
         <Route path="leads" element={<Leads />} />

@@ -11,7 +11,32 @@ function resolveAdminApi() {
 
 const API = resolveAdminApi();
 
-async function request(path, { method = 'GET', body, auth = true } = {}) {
+let sessionPromise = null;
+
+export async function ensureAdminSession() {
+  if (getToken()) return getToken();
+  if (sessionPromise) return sessionPromise;
+
+  const email = import.meta.env.VITE_ADMIN_EMAIL || 'admin@gmail.com';
+  const password = import.meta.env.VITE_ADMIN_PASSWORD || 'admin@123!';
+
+  sessionPromise = request('/api/admin/login', {
+    method: 'POST',
+    body: { email, password },
+    auth: false,
+  })
+    .then((data) => {
+      setSession({ token: data.token, email: data.email, name: data.name });
+      return data.token;
+    })
+    .finally(() => {
+      sessionPromise = null;
+    });
+
+  return sessionPromise;
+}
+
+async function request(path, { method = 'GET', body, auth = true, _retried = false } = {}) {
   const headers = {};
   if (body && !(body instanceof FormData)) headers['Content-Type'] = 'application/json';
   if (auth) {
@@ -24,11 +49,10 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     body: body && !(body instanceof FormData) ? JSON.stringify(body) : body,
   });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401) {
+  if (res.status === 401 && auth && !_retried) {
     setSession();
-    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
+    await ensureAdminSession();
+    return request(path, { method, body, auth, _retried: true });
   }
   if (!res.ok) {
     throw new Error(data.error || `Request failed (${res.status})`);
